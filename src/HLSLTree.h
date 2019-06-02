@@ -40,8 +40,6 @@ enum HLSLNodeType
     HLSLNodeType_FunctionCall,
     HLSLNodeType_StateAssignment,
     HLSLNodeType_SamplerState,
-    HLSLNodeType_Pass,
-    HLSLNodeType_Technique,
     HLSLNodeType_Attribute,
     HLSLNodeType_Pipeline,
     HLSLNodeType_Stage,
@@ -767,38 +765,6 @@ struct HLSLSamplerState : public HLSLExpression // @@ Does this need to be an ex
     HLSLStateAssignment*    stateAssignments;
 };
 
-struct HLSLPass : public HLSLNode
-{
-    static const HLSLNodeType s_type = HLSLNodeType_Pass;
-    HLSLPass()
-    {
-        name = NULL;
-        numStateAssignments = 0;
-        stateAssignments = NULL;
-        nextPass = NULL;
-    }
-    
-    const char*             name;
-    int                     numStateAssignments;
-    HLSLStateAssignment*    stateAssignments;
-    HLSLPass*               nextPass;
-};
-
-struct HLSLTechnique : public HLSLStatement
-{
-    static const HLSLNodeType s_type = HLSLNodeType_Technique;
-    HLSLTechnique()
-    {
-        name = NULL;
-        numPasses = 0;
-        passes = NULL;
-    }
-
-    const char*         name;
-    int                 numPasses;
-    HLSLPass*           passes;
-};
-
 struct HLSLPipeline : public HLSLStatement
 {
     static const HLSLNodeType s_type = HLSLNodeType_Pipeline;
@@ -813,24 +779,6 @@ struct HLSLPipeline : public HLSLStatement
     int                     numStateAssignments;
     HLSLStateAssignment*    stateAssignments;
 };
-
-struct HLSLStage : public HLSLStatement
-{
-    static const HLSLNodeType s_type = HLSLNodeType_Stage;
-    HLSLStage()
-    {
-        name = NULL;
-        statement = NULL;
-        inputs = NULL;
-        outputs = NULL;
-    }
-
-    const char*             name;
-    HLSLStatement*          statement;
-    HLSLDeclaration*        inputs;
-    HLSLDeclaration*        outputs;
-};
-
 
 /**
  * Abstract syntax tree for parsed HLSL code.
@@ -867,7 +815,6 @@ public:
     HLSLFunction * FindFunction(const char * name);
     HLSLDeclaration * FindGlobalDeclaration(const char * name, HLSLBuffer ** buffer_out = NULL);
     HLSLStruct * FindGlobalStruct(const char * name);
-    HLSLTechnique * FindTechnique(const char * name);
     HLSLPipeline * FindFirstPipeline();
     HLSLPipeline * FindNextPipeline(HLSLPipeline * current);
     HLSLPipeline * FindPipeline(const char * name);
@@ -942,8 +889,6 @@ public:
     virtual void VisitFunctionCall(HLSLFunctionCall * node);
     virtual void VisitStateAssignment(HLSLStateAssignment * node);
     virtual void VisitSamplerState(HLSLSamplerState * node);
-    virtual void VisitPass(HLSLPass * node);
-    virtual void VisitTechnique(HLSLTechnique * node);
     virtual void VisitPipeline(HLSLPipeline * node);
 
 
@@ -959,7 +904,6 @@ public:
 // Tree transformations:
 extern void PruneTree(HLSLTree* tree, const char* entryName0, const char* entryName1 = NULL);
 extern void SortTree(HLSLTree* tree);
-extern void GroupParameters(HLSLTree* tree);
 extern void HideUnusedArguments(HLSLFunction * function);
 extern bool EmulateAlphaTest(HLSLTree* tree, const char* entryName, float alphaRef = 0.5f);
 extern void FlattenExpressions(HLSLTree* tree);

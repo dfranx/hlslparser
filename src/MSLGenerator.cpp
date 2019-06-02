@@ -1177,10 +1177,6 @@ namespace M4
                 OutputStatements(indent + 1, blockStatement->statement);
                 m_writer.WriteLine(indent, "}");
             }
-            else if (statement->nodeType == HLSLNodeType_Technique)
-            {
-                // Techniques are ignored.
-            }
             else if (statement->nodeType == HLSLNodeType_Pipeline)
             {
                 // Pipelines are ignored.

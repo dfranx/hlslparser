@@ -246,26 +246,6 @@ HLSLStruct * HLSLTree::FindGlobalStruct(const char * name)
     return NULL;
 }
 
-HLSLTechnique * HLSLTree::FindTechnique(const char * name)
-{
-    HLSLStatement * statement = m_root->statement;
-    while (statement != NULL)
-    {
-        if (statement->nodeType == HLSLNodeType_Technique)
-        {
-            HLSLTechnique * technique = (HLSLTechnique *)statement;
-            if (String_Equal(name, technique->name))
-            {
-                return technique;
-            }
-        }
-
-        statement = statement->nextStatement;
-    }
-
-    return NULL;
-}
-
 HLSLPipeline * HLSLTree::FindFirstPipeline()
 {
     return FindNextPipeline(NULL);
@@ -725,9 +705,6 @@ void HLSLTreeVisitor::VisitTopLevelStatement(HLSLStatement * node)
     else if (node->nodeType == HLSLNodeType_Function) {
         VisitFunction((HLSLFunction *)node);
     }
-    else if (node->nodeType == HLSLNodeType_Technique) {
-        VisitTechnique((HLSLTechnique *)node);
-    }
     else if (node->nodeType == HLSLNodeType_Pipeline) {
         VisitPipeline((HLSLPipeline *)node);
     }
@@ -997,24 +974,6 @@ void HLSLTreeVisitor::VisitSamplerState(HLSLSamplerState * node)
     }
 }
 
-void HLSLTreeVisitor::VisitPass(HLSLPass * node)
-{
-    HLSLStateAssignment * stateAssignment = node->stateAssignments;
-    while (stateAssignment != NULL) {
-        VisitStateAssignment(stateAssignment);
-        stateAssignment = stateAssignment->nextStateAssignment;
-    }
-}
-
-void HLSLTreeVisitor::VisitTechnique(HLSLTechnique * node)
-{
-    HLSLPass * pass = node->passes;
-    while (pass != NULL) {
-        VisitPass(pass);
-        pass = pass->nextPass;
-    }
-}
-
 void HLSLTreeVisitor::VisitPipeline(HLSLPipeline * node)
 {
     // @@ ?
@@ -1181,7 +1140,7 @@ void PruneTree(HLSLTree* tree, const char* entryName0, const char* entryName1/*=
 void SortTree(HLSLTree * tree)
 {
     // Stable sort so that statements are in this order:
-    // structs, declarations, functions, techniques.
+    // structs, declarations, functions
 	// but their relative order is preserved.
 
     HLSLRoot* root = tree->GetRoot();
@@ -1285,195 +1244,6 @@ void AddSingleStatement(HLSLRoot * root, HLSLStatement * before, HLSLStatement *
 {
     AddStatements(root, before, statement, statement);
 }
-
-
-
-// @@ This is very game-specific. Should be moved to pipeline_parser or somewhere else.
-void GroupParameters(HLSLTree * tree)
-{
-    // Sort parameters based on semantic and group them in cbuffers.
-
-    HLSLRoot* root = tree->GetRoot();
-
-    HLSLDeclaration * firstPerItemDeclaration = NULL;
-    HLSLDeclaration * lastPerItemDeclaration = NULL;
-
-    HLSLDeclaration * instanceDataDeclaration = NULL;
-
-    HLSLDeclaration * firstPerPassDeclaration = NULL;
-    HLSLDeclaration * lastPerPassDeclaration = NULL;
-
-    HLSLDeclaration * firstPerItemSampler = NULL;
-    HLSLDeclaration * lastPerItemSampler = NULL;
-
-    HLSLDeclaration * firstPerPassSampler = NULL;
-    HLSLDeclaration * lastPerPassSampler = NULL;
-
-    HLSLStatement * statementBeforeBuffers = NULL;
-    
-    HLSLStatement* previousStatement = NULL;
-    HLSLStatement* statement = root->statement;
-    while (statement != NULL)
-    {
-        HLSLStatement* nextStatement = statement->nextStatement;
-
-        if (statement->nodeType == HLSLNodeType_Struct) // Do not remove this, or it will mess the else clause below.
-        {   
-            statementBeforeBuffers = statement;
-        }
-        else if (statement->nodeType == HLSLNodeType_Declaration)
-        {
-            HLSLDeclaration* declaration = (HLSLDeclaration*)statement;
-
-            // We insert buffers after the last const declaration.
-            if ((declaration->type.flags & HLSLTypeFlag_Const) != 0)
-            {
-                statementBeforeBuffers = statement;
-            }
-
-            // Do not move samplers or static/const parameters.
-            if ((declaration->type.flags & (HLSLTypeFlag_Static|HLSLTypeFlag_Const)) == 0)
-            {
-                // Unlink statement.
-                statement->nextStatement = NULL;
-                if (previousStatement != NULL) previousStatement->nextStatement = nextStatement;
-                else root->statement = nextStatement;
-
-                while(declaration != NULL)
-                {
-                    HLSLDeclaration* nextDeclaration = declaration->nextDeclaration;
-
-                    if (declaration->semantic != NULL && String_EqualNoCase(declaration->semantic, "PER_INSTANCED_ITEM"))
-                    {
-                        ASSERT(instanceDataDeclaration == NULL);
-                        instanceDataDeclaration = declaration;
-                    }
-                    else
-                    {
-                        // Select group based on type and semantic.
-                        HLSLDeclaration ** first, ** last;
-                        if (declaration->semantic == NULL || String_EqualNoCase(declaration->semantic, "PER_ITEM") || String_EqualNoCase(declaration->semantic, "PER_MATERIAL"))
-                        {
-                            if (IsSamplerType(declaration->type))
-                            {
-                                first = &firstPerItemSampler;
-                                last = &lastPerItemSampler;
-                            }
-                            else
-                            {
-                                first = &firstPerItemDeclaration;
-                                last = &lastPerItemDeclaration;
-                            }
-                        }
-                        else
-                        {
-                            if (IsSamplerType(declaration->type))
-                            {
-                                first = &firstPerPassSampler;
-                                last = &lastPerPassSampler;
-                            }
-                            else
-                            {
-                                first = &firstPerPassDeclaration;
-                                last = &lastPerPassDeclaration;
-                            }
-                        }
-
-                        // Add declaration to new list.
-                        if (*first == NULL) *first = declaration;
-                        else (*last)->nextStatement = declaration;
-                        *last = declaration;
-                    }
-
-                    // Unlink from declaration list.
-                    declaration->nextDeclaration = NULL;
-
-                    // Reset attributes.
-                    declaration->registerName = NULL;
-                    //declaration->semantic = NULL;         // @@ Don't do this!
-
-                    declaration = nextDeclaration;
-                }
-            }
-        }
-        /*else
-        {
-            if (statementBeforeBuffers == NULL) {
-                // This is the location where we will insert our buffers.
-                statementBeforeBuffers = previousStatement;
-            }
-        }*/
-
-        if (statement->nextStatement == nextStatement) {
-            previousStatement = statement;
-        }
-        statement = nextStatement;
-    }
-
-
-    // Add instance data declaration at the end of the per_item buffer.
-    if (instanceDataDeclaration != NULL)
-    {
-        if (firstPerItemDeclaration == NULL) firstPerItemDeclaration = instanceDataDeclaration;
-        else lastPerItemDeclaration->nextStatement = instanceDataDeclaration;
-    }
-
-
-    // Add samplers.
-    if (firstPerItemSampler != NULL) {
-        AddStatements(root, statementBeforeBuffers, firstPerItemSampler, lastPerItemSampler);
-        statementBeforeBuffers = lastPerItemSampler;
-    }
-    if (firstPerPassSampler != NULL) {
-        AddStatements(root, statementBeforeBuffers, firstPerPassSampler, lastPerPassSampler);
-        statementBeforeBuffers = lastPerPassSampler;
-    }
-
-
-    // @@ We are assuming per_item and per_pass buffers don't already exist. @@ We should assert on that.
-
-    if (firstPerItemDeclaration != NULL)
-    {
-        // Create buffer statement.
-        HLSLBuffer * perItemBuffer = tree->AddNode<HLSLBuffer>(firstPerItemDeclaration->fileName, firstPerItemDeclaration->line-1);
-        perItemBuffer->name = tree->AddString("per_item");
-        perItemBuffer->registerName = tree->AddString("b0");
-        perItemBuffer->field = firstPerItemDeclaration;
-        
-        // Set declaration buffer pointers.
-        HLSLDeclaration * field = perItemBuffer->field;
-        while (field != NULL)
-        {
-            field->buffer = perItemBuffer;
-            field = (HLSLDeclaration *)field->nextStatement;
-        }
-
-        // Add buffer to statements.
-        AddSingleStatement(root, statementBeforeBuffers, perItemBuffer);
-        statementBeforeBuffers = perItemBuffer;
-    }
-
-    if (firstPerPassDeclaration != NULL)
-    {
-        // Create buffer statement.
-        HLSLBuffer * perPassBuffer = tree->AddNode<HLSLBuffer>(firstPerPassDeclaration->fileName, firstPerPassDeclaration->line-1);
-        perPassBuffer->name = tree->AddString("per_pass");
-        perPassBuffer->registerName = tree->AddString("b1");
-        perPassBuffer->field = firstPerPassDeclaration;
-
-        // Set declaration buffer pointers.
-        HLSLDeclaration * field = perPassBuffer->field;
-        while (field != NULL)
-        {
-            field->buffer = perPassBuffer;
-            field = (HLSLDeclaration *)field->nextStatement;
-        }
-        
-        // Add buffer to statements.
-        AddSingleStatement(root, statementBeforeBuffers, perPassBuffer);
-    }
-}
-
 
 class FindArgumentVisitor : public HLSLTreeVisitor
 {

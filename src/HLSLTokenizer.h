@@ -76,8 +76,6 @@ enum HLSLToken
 
     // Effect keywords.
     HLSLToken_SamplerState,
-    HLSLToken_Technique,
-    HLSLToken_Pass,
 
     // Multi-character symbols.
     HLSLToken_LessEqual,

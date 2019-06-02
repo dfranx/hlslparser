@@ -965,10 +965,6 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             OutputStatements(indent + 1, blockStatement->statement);
             m_writer.WriteLine(indent, "}");
         }
-        else if (statement->nodeType == HLSLNodeType_Technique)
-        {
-            // Techniques are ignored.
-        }
         else if (statement->nodeType == HLSLNodeType_Pipeline)
         {
             // Pipelines are ignored.

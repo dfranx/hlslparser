@@ -567,6 +567,7 @@ const Intrinsic _intrinsic[] =
 		INTRINSIC_FLOAT1_FUNCTION("isinf"),
 
 		Intrinsic("asuint",    HLSLBaseType_Uint, HLSLBaseType_Float),
+        Intrinsic("asfloat", HLSLBaseType_Float, HLSLBaseType_Uint),
 
         SAMPLER_INTRINSIC_FUNCTION("tex2D", HLSLBaseType_Sampler2D, HLSLBaseType_Float2),
         
@@ -1521,13 +1522,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
             statement = declaration;
         }
     }
-    else if (ParseTechnique(statement)) {
-        doesNotExpectSemicolon = true;
-    }
     else if (ParsePipeline(statement)) {
-        doesNotExpectSemicolon = true;
-    }
-    else if (ParseStage(statement)) {
         doesNotExpectSemicolon = true;
     }
 
@@ -2689,112 +2684,6 @@ bool HLSLParser::ParseSamplerState(HLSLExpression*& expression)
     return true;
 }
 
-bool HLSLParser::ParseTechnique(HLSLStatement*& statement)
-{
-    if (!Accept(HLSLToken_Technique)) {
-        return false;
-    }
-
-    const char* techniqueName = NULL;
-    if (!ExpectIdentifier(techniqueName))
-    {
-        return false;
-    }
-
-    if (!Expect('{'))
-    {
-        return false;
-    }
-
-    HLSLTechnique* technique = m_tree->AddNode<HLSLTechnique>(GetFileName(), GetLineNumber());
-    technique->name = techniqueName;
-
-    //m_techniques.PushBack(technique);
-
-    HLSLPass* lastPass = NULL;
-
-    // Parse state assignments.
-    while (!Accept('}'))
-    {
-        if (CheckForUnexpectedEndOfStream('}'))
-        {
-            return false;
-        }
-
-        HLSLPass* pass = NULL;
-        if (!ParsePass(pass))
-        {
-            return false;
-        }
-        ASSERT(pass != NULL);
-        if (lastPass == NULL)
-        {
-            technique->passes = pass;
-        }
-        else
-        {
-            lastPass->nextPass = pass;
-        }
-        lastPass = pass;
-        technique->numPasses++;
-    }
-
-    statement = technique;
-    return true;
-}
-
-bool HLSLParser::ParsePass(HLSLPass*& pass)
-{
-    if (!Accept(HLSLToken_Pass)) {
-        return false;
-    }
-
-    // Optional pass name.
-    const char* passName = NULL;
-    AcceptIdentifier(passName);
-
-    if (!Expect('{'))
-    {
-        return false;
-    }
-
-    const char* fileName = GetFileName();
-    int         line     = GetLineNumber();
-
-    pass = m_tree->AddNode<HLSLPass>(fileName, line);
-    pass->name = passName;
-
-    HLSLStateAssignment* lastStateAssignment = NULL;
-
-    // Parse state assignments.
-    while (!Accept('}'))
-    {
-        if (CheckForUnexpectedEndOfStream('}'))
-        {
-            return false;
-        }
-
-        HLSLStateAssignment* stateAssignment = NULL;
-        if (!ParseStateAssignment(stateAssignment, /*isSamplerState=*/false, /*isPipelineState=*/false))
-        {
-            return false;
-        }
-        ASSERT(stateAssignment != NULL);
-        if (lastStateAssignment == NULL)
-        {
-            pass->stateAssignments = stateAssignment;
-        }
-        else
-        {
-            lastStateAssignment->nextStateAssignment = stateAssignment;
-        }
-        lastStateAssignment = stateAssignment;
-        pass->numStateAssignments++;
-    }
-    return true;
-}
-
-
 bool HLSLParser::ParsePipeline(HLSLStatement*& statement)
 {
     if (!Accept("pipeline")) {
@@ -3146,47 +3035,6 @@ bool HLSLParser::ParseAttributeBlock(HLSLAttribute*& attribute)
 
     return true;
 }
-
-bool HLSLParser::ParseStage(HLSLStatement*& statement)
-{
-    if (!Accept("stage"))
-    {
-        return false;
-    }
-
-    // Required stage name.
-    const char* stageName = NULL;
-    if (!ExpectIdentifier(stageName))
-    {
-        return false;
-    }
-
-    if (!Expect('{'))
-    {
-        return false;
-    }
-
-    HLSLStage* stage = m_tree->AddNode<HLSLStage>(GetFileName(), GetLineNumber());
-    stage->name = stageName;
-
-    BeginScope();
-
-    HLSLType voidType(HLSLBaseType_Void);
-    if (!Expect('{') || !ParseBlock(stage->statement, voidType))
-    {
-        return false;
-    }
-
-    EndScope();
-
-    // @@ To finish the stage definition we should traverse the statements recursively (including function calls) and find all the input/output declarations.
-
-    statement = stage;
-    return true;
-}
-
-
-
 
 bool HLSLParser::Parse(HLSLTree* tree)
 {
