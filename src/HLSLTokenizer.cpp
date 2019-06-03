@@ -65,7 +65,6 @@ static const char* _reservedWords[] =
         "struct",
         "cbuffer",
         "tbuffer",
-        "register",
         "return",
         "continue",
         "discard",

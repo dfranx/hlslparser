@@ -60,7 +60,6 @@ enum HLSLToken
     HLSLToken_Struct,
     HLSLToken_CBuffer,
     HLSLToken_TBuffer,
-    HLSLToken_Register,
     HLSLToken_Return,
     HLSLToken_Continue,
     HLSLToken_Discard,

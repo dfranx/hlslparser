@@ -1359,7 +1359,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
         // Optional register assignment.
         if (Accept(':'))
         {
-            if (!Expect(HLSLToken_Register) || !Expect('(') || !ExpectIdentifier(buffer->registerName) || !Expect(')'))
+            if (!ExpectIdentifier(buffer->registerName))
             {
                 return false;
             }
@@ -1504,7 +1504,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                 if (AcceptIdentifier(declaration->semantic)) {
                     int k = 1;
                 }
-                else if (!Expect(HLSLToken_Register) || !Expect('(') || !ExpectIdentifier(declaration->registerName) || !Expect(')'))
+                else if (!ExpectIdentifier(declaration->registerName))
                 {
                     return false;
                 }
