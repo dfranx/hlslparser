@@ -1501,10 +1501,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
             if (Accept(':'))
             {
                 // @@ Currently we support either a semantic or a register, but not both.
-                if (AcceptIdentifier(declaration->semantic)) {
-                    int k = 1;
-                }
-                else if (!ExpectIdentifier(declaration->registerName))
+                if (!AcceptIdentifier(declaration->semantic)) 
                 {
                     return false;
                 }
