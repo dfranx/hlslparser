@@ -105,14 +105,15 @@ enum HLSLBaseType
     HLSLBaseType_Ushort4,*/
     HLSLBaseType_LastInteger = HLSLBaseType_Uint4,
     HLSLBaseType_LastNumeric = HLSLBaseType_Uint4,
-    HLSLBaseType_Texture,
-    HLSLBaseType_Sampler,           // @@ use type inference to determine sampler type.
-    HLSLBaseType_Sampler2D,
-    HLSLBaseType_Sampler3D,
-    HLSLBaseType_SamplerCube,
-    HLSLBaseType_Sampler2DShadow,
-    HLSLBaseType_Sampler2DMS,
-    HLSLBaseType_Sampler2DArray,
+    HLSLBaseType_Texture1D,
+    HLSLBaseType_Texture2D,
+    HLSLBaseType_Texture3D,
+    HLSLBaseType_TextureCube,
+    HLSLBaseType_TextureCubeArray,
+    HLSLBaseType_Texture2DMS,
+    HLSLBaseType_Texture1DArray,
+    HLSLBaseType_Texture2DArray,
+    HLSLBaseType_Texture2DMSArray,
     HLSLBaseType_UserDefined,       // struct
     HLSLBaseType_Expression,        // type argument for defined() sizeof() and typeof().
     HLSLBaseType_Auto,
@@ -124,15 +125,16 @@ enum HLSLBaseType
 extern const HLSLTypeDimension BaseTypeDimension[HLSLBaseType_Count];
 extern const HLSLBaseType ScalarBaseType[HLSLBaseType_Count];
 
-inline bool IsSamplerType(HLSLBaseType baseType)
+inline bool IsReadTextureType(HLSLBaseType baseType)
 {
-    return baseType == HLSLBaseType_Sampler ||
-           baseType == HLSLBaseType_Sampler2D ||
-           baseType == HLSLBaseType_Sampler3D ||
-           baseType == HLSLBaseType_SamplerCube ||
-           baseType == HLSLBaseType_Sampler2DShadow ||
-           baseType == HLSLBaseType_Sampler2DMS ||
-           baseType == HLSLBaseType_Sampler2DArray;
+    return baseType == HLSLBaseType_Texture1D ||
+           baseType == HLSLBaseType_Texture2D ||
+           baseType == HLSLBaseType_Texture3D ||
+           baseType == HLSLBaseType_TextureCube ||
+           baseType == HLSLBaseType_Texture2DMS ||
+           baseType == HLSLBaseType_Texture1DArray ||
+           baseType == HLSLBaseType_Texture2DArray ||
+           baseType == HLSLBaseType_Texture2DMSArray;
 }
 
 inline bool IsMatrixType(HLSLBaseType baseType)
@@ -329,15 +331,21 @@ struct HLSLType
     HLSLBaseType        baseType;
     HLSLBaseType        samplerType;    // Half or Float
     const char*         typeName;       // For user defined types.
+    unsigned char       sampleCount;
     bool                array;
     HLSLExpression*     arraySize;
     int                 flags;
     HLSLAddressSpace    addressSpace;
 };
 
-inline bool IsSamplerType(const HLSLType & type)
+inline bool IsReadTextureType(const HLSLType& type)
 {
-    return IsSamplerType(type.baseType);
+    return IsReadTextureType(type.baseType);
+}
+
+inline bool IsMultisampledTexture(const HLSLBaseType& type)
+{
+    return type == HLSLBaseType_Texture2DMS || type == HLSLBaseType_Texture2DMSArray;
 }
 
 inline bool IsScalarType(const HLSLType & type)

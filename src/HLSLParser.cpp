@@ -569,38 +569,39 @@ const Intrinsic _intrinsic[] =
 		Intrinsic("asuint",    HLSLBaseType_Uint, HLSLBaseType_Float),
         Intrinsic("asfloat", HLSLBaseType_Float, HLSLBaseType_Uint),
 
-        SAMPLER_INTRINSIC_FUNCTION("tex2D", HLSLBaseType_Sampler2D, HLSLBaseType_Float2),
+        SAMPLER_INTRINSIC_FUNCTION("tex2D", HLSLBaseType_Texture2D, HLSLBaseType_Float2),
         
-        Intrinsic("tex2Dproj", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float4),
+        Intrinsic("tex2Dproj", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float4),
 
-        SAMPLER_INTRINSIC_FUNCTION("tex2Dlod", HLSLBaseType_Sampler2D, HLSLBaseType_Float4),
+        SAMPLER_INTRINSIC_FUNCTION("tex2Dlod", HLSLBaseType_Texture2D, HLSLBaseType_Float4),
         
-        Intrinsic("tex2Dlod",  HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float4, HLSLBaseType_Int2),   // With offset.
+        Intrinsic("tex2Dlod",  HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float4, HLSLBaseType_Int2),   // With offset.
 
-        SAMPLER_INTRINSIC_FUNCTION("tex2Dbias", HLSLBaseType_Sampler2D, HLSLBaseType_Float4),
+        SAMPLER_INTRINSIC_FUNCTION("tex2Dbias", HLSLBaseType_Texture2D, HLSLBaseType_Float4),
         
-        Intrinsic("tex2Dgrad", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float2),
-        Intrinsic("tex2Dgather", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float2, HLSLBaseType_Int),
-        Intrinsic("tex2Dgather", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float2, HLSLBaseType_Int2, HLSLBaseType_Int),    // With offset.
-        Intrinsic("tex2Dsize", HLSLBaseType_Int2, HLSLBaseType_Sampler2D),
-        Intrinsic("tex2Dfetch", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Int3),    // u,v,mipmap
+        Intrinsic("tex2Dgrad", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float2),
+        Intrinsic("tex2Dgather", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Int),
+        Intrinsic("tex2Dgather", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Int2, HLSLBaseType_Int),    // With offset.
+        Intrinsic("tex2Dsize", HLSLBaseType_Int2, HLSLBaseType_Texture2D),
+        Intrinsic("tex2Dfetch", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Int3),    // u,v,mipmap
 
-        Intrinsic("tex2Dcmp", HLSLBaseType_Float4, HLSLBaseType_Sampler2DShadow, HLSLBaseType_Float4),                // @@ IC: This really takes a float3 (uvz) and returns a float.
+        Intrinsic("tex2Dcmp", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float4),                // @@ IC: This really takes a float3 (uvz) and returns a float.
 
-        Intrinsic("tex2DMSfetch", HLSLBaseType_Float4, HLSLBaseType_Sampler2DMS, HLSLBaseType_Int2, HLSLBaseType_Int),
-        Intrinsic("tex2DMSsize", HLSLBaseType_Int3, HLSLBaseType_Sampler2DMS),
+        Intrinsic("tex2DMSfetch", HLSLBaseType_Float4, HLSLBaseType_Texture2DMS, HLSLBaseType_Int2, HLSLBaseType_Int),
+        Intrinsic("tex2DMSsize", HLSLBaseType_Int3, HLSLBaseType_Texture2DMS),
 
-        Intrinsic("tex2DArray", HLSLBaseType_Float4, HLSLBaseType_Sampler2DArray, HLSLBaseType_Float3),
+        Intrinsic("tex1DArray", HLSLBaseType_Float4, HLSLBaseType_Texture1DArray, HLSLBaseType_Float2),
+        Intrinsic("tex2DArray", HLSLBaseType_Float4, HLSLBaseType_Texture2DArray, HLSLBaseType_Float3),
 
-        Intrinsic("tex3D",     HLSLBaseType_Float4, HLSLBaseType_Sampler3D, HLSLBaseType_Float3),
-        Intrinsic("tex3Dlod",  HLSLBaseType_Float4, HLSLBaseType_Sampler3D, HLSLBaseType_Float4),
-        Intrinsic("tex3Dbias", HLSLBaseType_Float4, HLSLBaseType_Sampler3D, HLSLBaseType_Float4),
-        Intrinsic("tex3Dsize", HLSLBaseType_Int3, HLSLBaseType_Sampler3D),
+        Intrinsic("tex3D",     HLSLBaseType_Float4, HLSLBaseType_Texture3D, HLSLBaseType_Float3),
+        Intrinsic("tex3Dlod",  HLSLBaseType_Float4, HLSLBaseType_Texture3D, HLSLBaseType_Float4),
+        Intrinsic("tex3Dbias", HLSLBaseType_Float4, HLSLBaseType_Texture3D, HLSLBaseType_Float4),
+        Intrinsic("tex3Dsize", HLSLBaseType_Int3, HLSLBaseType_Texture3D),
 
-        Intrinsic("texCUBE",       HLSLBaseType_Float4, HLSLBaseType_SamplerCube, HLSLBaseType_Float3),
-        Intrinsic("texCUBElod", HLSLBaseType_Float4, HLSLBaseType_SamplerCube, HLSLBaseType_Float4),
-        Intrinsic("texCUBEbias", HLSLBaseType_Float4, HLSLBaseType_SamplerCube, HLSLBaseType_Float4),
-        Intrinsic("texCUBEsize", HLSLBaseType_Int, HLSLBaseType_SamplerCube),
+        Intrinsic("texCube",       HLSLBaseType_Float4, HLSLBaseType_TextureCube, HLSLBaseType_Float3),
+        Intrinsic("texCubelod", HLSLBaseType_Float4, HLSLBaseType_TextureCube, HLSLBaseType_Float4),
+        Intrinsic("texCubebias", HLSLBaseType_Float4, HLSLBaseType_TextureCube, HLSLBaseType_Float4),
+        Intrinsic("texCubesize", HLSLBaseType_Int, HLSLBaseType_TextureCube),
 
         Intrinsic( "sincos", HLSLBaseType_Void,  HLSLBaseType_Float,   HLSLBaseType_Float,  HLSLBaseType_Float ),
         Intrinsic( "sincos", HLSLBaseType_Void,  HLSLBaseType_Float2,  HLSLBaseType_Float,  HLSLBaseType_Float2 ),
@@ -990,7 +991,7 @@ static int GetTypeCastRank(HLSLTree * tree, const HLSLType& srcType, const HLSLT
 
     if (srcType.baseType == dstType.baseType)
     {
-        if (IsSamplerType(srcType.baseType))
+        if (IsReadTextureType(srcType.baseType))
         {
             return srcType.samplerType == dstType.samplerType ? 0 : -1;
         }
@@ -1349,7 +1350,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
 
         statement = structure;
     }
-    else if (Accept(HLSLToken_CBuffer) || Accept(HLSLToken_TBuffer))
+    else if (Accept(HLSLToken_ConstantBuffer) || Accept(HLSLToken_TextureBuffer))
     {
         // cbuffer/tbuffer declaration.
 
@@ -1881,7 +1882,7 @@ bool HLSLParser::ParseDeclarationAssignment(HLSLDeclaration* declaration)
                 return false;
             }
         }
-        else if (IsSamplerType(declaration->type.baseType))
+        else if (IsReadTextureType(declaration->type.baseType))
         {
             if (!ParseSamplerState(declaration->assignment))
             {
@@ -3064,6 +3065,53 @@ bool HLSLParser::Parse(HLSLTree* tree)
     return true;
 }
 
+HLSLBaseType HLSLParser::TokenToBaseType(int token)
+{
+    switch (token)
+    {
+    case HLSLToken_Float: return HLSLBaseType_Float;
+    case HLSLToken_Float2: return HLSLBaseType_Float2;
+    case HLSLToken_Float3: return HLSLBaseType_Float3;
+    case HLSLToken_Float4: return HLSLBaseType_Float4;
+    case HLSLToken_Float2x2: return HLSLBaseType_Float2x2;
+    case HLSLToken_Float3x3: return HLSLBaseType_Float3x3;
+    case HLSLToken_Float4x4: return HLSLBaseType_Float4x4;
+    case HLSLToken_Float4x3: return HLSLBaseType_Float4x3;
+    case HLSLToken_Float4x2: return HLSLBaseType_Float4x2;
+    case HLSLToken_Half: return HLSLBaseType_Half;
+    case HLSLToken_Half2: return HLSLBaseType_Half2;
+    case HLSLToken_Half3: return HLSLBaseType_Half3;
+    case HLSLToken_Half4: return HLSLBaseType_Half4;
+    case HLSLToken_Half2x2: return HLSLBaseType_Half2x2;
+    case HLSLToken_Half3x3: return HLSLBaseType_Half3x3;
+    case HLSLToken_Half4x4: return HLSLBaseType_Half4x4;
+    case HLSLToken_Half4x3: return HLSLBaseType_Half4x3;
+    case HLSLToken_Half4x2: return HLSLBaseType_Half4x2;
+    case HLSLToken_Bool: return HLSLBaseType_Bool;
+    case HLSLToken_Bool2: return HLSLBaseType_Bool2;
+    case HLSLToken_Bool3: return HLSLBaseType_Bool3;
+    case HLSLToken_Bool4: return HLSLBaseType_Bool4;
+    case HLSLToken_Int: return HLSLBaseType_Int;
+    case HLSLToken_Int2: return HLSLBaseType_Int2;
+    case HLSLToken_Int3: return HLSLBaseType_Int3;
+    case HLSLToken_Int4: return HLSLBaseType_Int4;
+    case HLSLToken_Uint: return HLSLBaseType_Uint;
+    case HLSLToken_Uint2: return HLSLBaseType_Uint2;
+    case HLSLToken_Uint3: return HLSLBaseType_Uint3;
+    case HLSLToken_Uint4: return HLSLBaseType_Uint4;
+    case HLSLToken_Texture1D: return HLSLBaseType_Texture1D;
+    case HLSLToken_Texture2D: return HLSLBaseType_Texture2D;
+    case HLSLToken_Texture3D: return HLSLBaseType_Texture3D;
+    case HLSLToken_TextureCube: return HLSLBaseType_TextureCube;
+    case HLSLToken_TextureCubeArray: return HLSLBaseType_TextureCubeArray;
+    case HLSLToken_Texture2DMS: return HLSLBaseType_Texture2DMS;
+    case HLSLToken_Texture1DArray: return HLSLBaseType_Texture1DArray;
+    case HLSLToken_Texture2DArray: return HLSLBaseType_Texture2DArray;
+    case HLSLToken_Texture2DMSArray: return HLSLBaseType_Texture2DMSArray;
+    default: return HLSLBaseType_Void;
+    }
+}
+
 bool HLSLParser::AcceptTypeModifier(int& flags)
 {
     if (Accept(HLSLToken_Const))
@@ -3132,7 +3180,6 @@ bool HLSLParser::AcceptInterpolationModifier(int& flags)
     return false;
 }
 
-
 bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/)
 {
     //if (type.flags != NULL)
@@ -3144,153 +3191,39 @@ bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/
     int token = m_tokenizer.GetToken();
 
     // Check built-in types.
-    type.baseType = HLSLBaseType_Void;
-    switch (token)
-    {
-    case HLSLToken_Float:
-        type.baseType = HLSLBaseType_Float;
-        break;
-    case HLSLToken_Float2:      
-        type.baseType = HLSLBaseType_Float2;
-        break;
-    case HLSLToken_Float3:
-        type.baseType = HLSLBaseType_Float3;
-        break;
-    case HLSLToken_Float4:
-        type.baseType = HLSLBaseType_Float4;
-        break;
-	case HLSLToken_Float2x2:
-		type.baseType = HLSLBaseType_Float2x2;
-		break;
-    case HLSLToken_Float3x3:
-        type.baseType = HLSLBaseType_Float3x3;
-        break;
-    case HLSLToken_Float4x4:
-        type.baseType = HLSLBaseType_Float4x4;
-        break;
-    case HLSLToken_Float4x3:
-        type.baseType = HLSLBaseType_Float4x3;
-        break;
-    case HLSLToken_Float4x2:
-        type.baseType = HLSLBaseType_Float4x2;
-        break;
-    case HLSLToken_Half:
-        type.baseType = HLSLBaseType_Half;
-        break;
-    case HLSLToken_Half2:      
-        type.baseType = HLSLBaseType_Half2;
-        break;
-    case HLSLToken_Half3:
-        type.baseType = HLSLBaseType_Half3;
-        break;
-    case HLSLToken_Half4:
-        type.baseType = HLSLBaseType_Half4;
-        break;
-	case HLSLToken_Half2x2:
-		type.baseType = HLSLBaseType_Half2x2;
-		break;
-    case HLSLToken_Half3x3:
-        type.baseType = HLSLBaseType_Half3x3;
-        break;
-    case HLSLToken_Half4x4:
-        type.baseType = HLSLBaseType_Half4x4;
-        break;
-    case HLSLToken_Half4x3:
-        type.baseType = HLSLBaseType_Half4x3;
-        break;
-    case HLSLToken_Half4x2:
-        type.baseType = HLSLBaseType_Half4x2;
-        break;
-    case HLSLToken_Bool:
-        type.baseType = HLSLBaseType_Bool;
-        break;
-	case HLSLToken_Bool2:
-		type.baseType = HLSLBaseType_Bool2;
-		break;
-	case HLSLToken_Bool3:
-		type.baseType = HLSLBaseType_Bool3;
-		break;
-	case HLSLToken_Bool4:
-		type.baseType = HLSLBaseType_Bool4;
-		break;
-    case HLSLToken_Int:
-        type.baseType = HLSLBaseType_Int;
-        break;
-    case HLSLToken_Int2:
-        type.baseType = HLSLBaseType_Int2;
-        break;
-    case HLSLToken_Int3:
-        type.baseType = HLSLBaseType_Int3;
-        break;
-    case HLSLToken_Int4:
-        type.baseType = HLSLBaseType_Int4;
-        break;
-    case HLSLToken_Uint:
-        type.baseType = HLSLBaseType_Uint;
-        break;
-    case HLSLToken_Uint2:
-        type.baseType = HLSLBaseType_Uint2;
-        break;
-    case HLSLToken_Uint3:
-        type.baseType = HLSLBaseType_Uint3;
-        break;
-    case HLSLToken_Uint4:
-        type.baseType = HLSLBaseType_Uint4;
-        break;
-    case HLSLToken_Texture:
-        type.baseType = HLSLBaseType_Texture;
-        break;
-    case HLSLToken_Sampler:
-        type.baseType = HLSLBaseType_Sampler2D;  // @@ IC: For now we assume that generic samplers are always sampler2D
-        break;
-    case HLSLToken_Sampler2D:
-        type.baseType = HLSLBaseType_Sampler2D;
-        break;
-    case HLSLToken_Sampler3D:
-        type.baseType = HLSLBaseType_Sampler3D;
-        break;
-    case HLSLToken_SamplerCube:
-        type.baseType = HLSLBaseType_SamplerCube;
-        break;
-    case HLSLToken_Sampler2DShadow:
-        type.baseType = HLSLBaseType_Sampler2DShadow;
-        break;
-    case HLSLToken_Sampler2DMS:
-        type.baseType = HLSLBaseType_Sampler2DMS;
-        break;
-    case HLSLToken_Sampler2DArray:
-        type.baseType = HLSLBaseType_Sampler2DArray;
-        break;
-    }
+    type.baseType = TokenToBaseType(token);
+
     if (type.baseType != HLSLBaseType_Void)
     {
         m_tokenizer.Next();
         
-        if (IsSamplerType(type.baseType))
+        if (IsReadTextureType(type.baseType))
         {
-            // Parse optional sampler type.
-            if (Accept('<'))
+            if (!Accept('<'))
+                return false;
+
+            int token = m_tokenizer.GetToken();
+            type.samplerType = TokenToBaseType(token);
+
+            m_tokenizer.Next();
+            
+            if (IsMultisampledTexture(type.baseType))
             {
-                int token = m_tokenizer.GetToken();
-                if (token == HLSLToken_Float)
-                {
-                    type.samplerType = HLSLBaseType_Float;
-                }
-                else if (token == HLSLToken_Half)
-                {
-                    type.samplerType = HLSLBaseType_Half;
-                }
-                else
-                {
-                    m_tokenizer.Error("Expected half or float.");
+                if (!Expect(','))
                     return false;
-                }
-                m_tokenizer.Next();
-                
-                if (!Expect('>'))
+
+                int sampleCount = -1;
+                if (AcceptInt(sampleCount))
                 {
-                    return false;
+                    if (sampleCount < 1 || sampleCount > 128)
+                        m_tokenizer.Error("Sampler counts are only supported in the range [1-128]");
+
+                    type.sampleCount = (unsigned char)sampleCount;
                 }
+            }
+            if (!Expect('>'))
+            {
+                return false;
             }
         }
         return true;

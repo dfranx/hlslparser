@@ -38,29 +38,44 @@ const char* GLSLGenerator::s_reservedWord[] =
         "dFdy",
     };
 
-static const char* GetTypeName(const HLSLType& type)
+static bool IsFloatVectorType(const HLSLBaseType& type)
 {
-    switch (type.baseType)
+    return type == HLSLBaseType_Float || type == HLSLBaseType_Float2 || type == HLSLBaseType_Float3 || type == HLSLBaseType_Float4;
+}
+
+static bool IsIntVectorType(const HLSLBaseType& type)
+{
+    return type == HLSLBaseType_Int|| type == HLSLBaseType_Int2 || type == HLSLBaseType_Int3 || type == HLSLBaseType_Int4;
+}
+
+static bool IsUintVectorType(const HLSLBaseType& type)
+{
+    return type == HLSLBaseType_Uint || type == HLSLBaseType_Uint2 || type == HLSLBaseType_Uint3 || type == HLSLBaseType_Uint4;
+}
+
+static const char* GetBaseTypeName(const HLSLBaseType& type, const HLSLBaseType& samplerType, const char* userDefined)
+{
+    switch (type)
     {
     case HLSLBaseType_Void:         return "void";
     case HLSLBaseType_Float:        return "float";
     case HLSLBaseType_Float2:       return "vec2";
     case HLSLBaseType_Float3:       return "vec3";
     case HLSLBaseType_Float4:       return "vec4";
-	case HLSLBaseType_Float2x2:     return "mat2";
+    case HLSLBaseType_Float2x2:     return "mat2";
     case HLSLBaseType_Float3x3:     return "mat3";
     case HLSLBaseType_Float4x4:     return "mat4";
     case HLSLBaseType_Half:         return "float";
     case HLSLBaseType_Half2:        return "vec2";
     case HLSLBaseType_Half3:        return "vec3";
     case HLSLBaseType_Half4:        return "vec4";
-	case HLSLBaseType_Half2x2:      return "mat2";
+    case HLSLBaseType_Half2x2:      return "mat2";
     case HLSLBaseType_Half3x3:      return "mat3";
     case HLSLBaseType_Half4x4:      return "mat4";
     case HLSLBaseType_Bool:         return "bool";
-	case HLSLBaseType_Bool2:        return "bvec2";
-	case HLSLBaseType_Bool3:        return "bvec3";
-	case HLSLBaseType_Bool4:        return "bvec4";
+    case HLSLBaseType_Bool2:        return "bvec2";
+    case HLSLBaseType_Bool3:        return "bvec3";
+    case HLSLBaseType_Bool4:        return "bvec4";
     case HLSLBaseType_Int:          return "int";
     case HLSLBaseType_Int2:         return "ivec2";
     case HLSLBaseType_Int3:         return "ivec3";
@@ -69,16 +84,104 @@ static const char* GetTypeName(const HLSLType& type)
     case HLSLBaseType_Uint2:        return "uvec2";
     case HLSLBaseType_Uint3:        return "uvec3";
     case HLSLBaseType_Uint4:        return "uvec4";
-    case HLSLBaseType_Texture:      return "texture";
-    case HLSLBaseType_Sampler:      return "sampler";
-    case HLSLBaseType_Sampler2D:    return "sampler2D";
-    case HLSLBaseType_Sampler3D:    return "sampler3D";
-    case HLSLBaseType_SamplerCube:  return "samplerCube";
-    case HLSLBaseType_Sampler2DMS:  return "sampler2DMS";
-    case HLSLBaseType_Sampler2DArray:  return "sampler2DArray";
-    case HLSLBaseType_UserDefined:  return type.typeName;
+    case HLSLBaseType_Texture1D:
+        if (IsFloatVectorType(samplerType))
+            return "sampler1D";
+        else if (IsIntVectorType(samplerType))
+            return "isampler1D";
+        else if (IsUintVectorType(samplerType))
+            return "usampler1D";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_Texture2D:
+        if (IsFloatVectorType(samplerType))
+            return "sampler2D";
+        else if (IsIntVectorType(samplerType))
+            return "isampler2D";
+        else if (IsUintVectorType(samplerType))
+            return "usampler2D";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_Texture3D:
+        if (IsFloatVectorType(samplerType))
+            return "sampler3D";
+        else if (IsIntVectorType(samplerType))
+            return "isampler3D";
+        else if (IsUintVectorType(samplerType))
+            return "usampler3D";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_TextureCube:
+        if (IsFloatVectorType(samplerType))
+            return "samplerCube";
+        else if (IsIntVectorType(samplerType))
+            return "isamplerCube";
+        else if (IsUintVectorType(samplerType))
+            return "usamplerCube";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_TextureCubeArray:
+        if (IsFloatVectorType(samplerType))
+            return "samplerCubeArray";
+        else if (IsIntVectorType(samplerType))
+            return "isamplerCubeArray";
+        else if (IsUintVectorType(samplerType))
+            return "usamplerCubeArray";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_Texture2DMS:
+        if (IsFloatVectorType(samplerType))
+            return "sampler2DMS";
+        else if (IsIntVectorType(samplerType))
+            return "isampler2DMS";
+        else if (IsUintVectorType(samplerType))
+            return "usampler2DMS";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_Texture1DArray:
+        if (IsFloatVectorType(samplerType))
+            return "sampler1DArray";
+        else if (IsIntVectorType(samplerType))
+            return "isampler1DArray";
+        else if (IsUintVectorType(samplerType))
+            return "usampler1DArray";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_Texture2DArray:
+        if (IsFloatVectorType(samplerType))
+            return "sampler2DArray";
+        else if (IsIntVectorType(samplerType))
+            return "isampler2DArray";
+        else if (IsUintVectorType(samplerType))
+            return "usampler2DArray";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_Texture2DMSArray:
+        if (IsFloatVectorType(samplerType))
+            return "sampler2DMSArray";
+        else if (IsIntVectorType(samplerType))
+            return "isampler2DMSArray";
+        else if (IsUintVectorType(samplerType))
+            return "usampler2DMSArray";
+        else
+            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
+        return "?";
+    case HLSLBaseType_UserDefined:  return userDefined;
     default: return "?";
     }
+}
+
+static const char* GetTypeName(const HLSLType& type)
+{
+    return GetBaseTypeName(type.baseType, type.samplerType, type.typeName);
 }
 
 static bool GetCanImplicitCast(const HLSLType& srcType, const HLSLType& dstType)
@@ -989,19 +1092,15 @@ void GLSLGenerator::OutputStatements(int indent, HLSLStatement* statement, const
         {
             HLSLDeclaration* declaration = static_cast<HLSLDeclaration*>(statement);
 
-            // GLSL doesn't seem have texture uniforms, so just ignore them.
-            if (declaration->type.baseType != HLSLBaseType_Texture)
+            m_writer.BeginLine(indent, declaration->fileName, declaration->line);
+            if (indent == 0)
             {
-                m_writer.BeginLine(indent, declaration->fileName, declaration->line);
-                if (indent == 0)
-                {
-                    // At the top level, we need the "uniform" keyword.
-                    if ((declaration->type.flags & HLSLTypeFlag_Static) == 0)
+                // At the top level, we need the "uniform" keyword.
+                if ((declaration->type.flags & HLSLTypeFlag_Static) == 0)
                         m_writer.Write("uniform ");
-                }
-                OutputDeclaration(declaration);
-                m_writer.EndLine(";");
             }
+            OutputDeclaration(declaration);
+            m_writer.EndLine(";");
         }
         else if (statement->nodeType == HLSLNodeType_Struct)
         {

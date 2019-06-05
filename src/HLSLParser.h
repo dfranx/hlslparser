@@ -31,6 +31,7 @@ public:
 
     bool Parse(HLSLTree* tree);
 
+    static HLSLBaseType TokenToBaseType(int token);
 private:
 
     bool Accept(int token);

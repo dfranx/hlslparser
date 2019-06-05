@@ -36,7 +36,7 @@ public:
     };
 
     HLSLGenerator();
-    
+
     bool Generate(HLSLTree* tree, Target target, const char* entryName, bool legacy);
     const char* GetResult() const;
 
@@ -50,7 +50,7 @@ private:
     void OutputDeclaration(HLSLDeclaration* declaration);
     void OutputDeclaration(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression* defaultValue = NULL);
     void OutputDeclarationType(const HLSLType& type);
-    void OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic =NULL, const char* registerName = NULL, HLSLExpression * assignment = NULL);
+    void OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression * assignment = NULL);
 
     /** Generates a name of the format "base+n" where n is an integer such that the name
      * isn't used in the syntax tree. */
@@ -66,14 +66,6 @@ private:
     bool            m_legacy;
     bool            m_isInsideBuffer;
 
-    char            m_textureSampler2DStruct[64];
-    char            m_textureSampler2DCtor[64];
-    char            m_textureSampler2DShadowStruct[64];
-    char            m_textureSampler2DShadowCtor[64];
-    char            m_textureSampler3DStruct[64];
-    char            m_textureSampler3DCtor[64];
-    char            m_textureSamplerCubeStruct[64];
-    char            m_textureSamplerCubeCtor[64];
     char            m_tex2DFunction[64];
     char            m_tex2DProjFunction[64];
     char            m_tex2DLodFunction[64];

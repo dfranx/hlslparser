@@ -18,33 +18,33 @@
 namespace M4
 {
 
-static const char* GetTypeName(const HLSLType& type)
+static const char* GetBaseTypeName(const HLSLBaseType& type, const char* userDefined = NULL)
 {
-    switch (type.baseType)
+    switch (type)
     {
     case HLSLBaseType_Void:         return "void";
     case HLSLBaseType_Float:        return "float";
     case HLSLBaseType_Float2:       return "float2";
     case HLSLBaseType_Float3:       return "float3";
     case HLSLBaseType_Float4:       return "float4";
-	case HLSLBaseType_Float2x2:     return "float2x2";
+    case HLSLBaseType_Float2x2:     return "float2x2";
     case HLSLBaseType_Float3x3:     return "float3x3";
     case HLSLBaseType_Float4x4:     return "float4x4";
     case HLSLBaseType_Float4x3:     return "float4x3";
     case HLSLBaseType_Float4x2:     return "float4x2";
-    case HLSLBaseType_Half:        return "float";
-    case HLSLBaseType_Half2:       return "float2";
-    case HLSLBaseType_Half3:       return "float3";
-    case HLSLBaseType_Half4:       return "float4";
-    case HLSLBaseType_Half2x2:     return "float2x2";
-    case HLSLBaseType_Half3x3:     return "float3x3";
-    case HLSLBaseType_Half4x4:     return "float4x4";
-    case HLSLBaseType_Half4x3:     return "float4x3";
-    case HLSLBaseType_Half4x2:     return "float4x2";
+    case HLSLBaseType_Half:         return "float";
+    case HLSLBaseType_Half2:        return "float2";
+    case HLSLBaseType_Half3:        return "float3";
+    case HLSLBaseType_Half4:        return "float4";
+    case HLSLBaseType_Half2x2:      return "float2x2";
+    case HLSLBaseType_Half3x3:      return "float3x3";
+    case HLSLBaseType_Half4x4:      return "float4x4";
+    case HLSLBaseType_Half4x3:      return "float4x3";
+    case HLSLBaseType_Half4x2:      return "float4x2";
     case HLSLBaseType_Bool:         return "bool";
-	case HLSLBaseType_Bool2:        return "bool2";
-	case HLSLBaseType_Bool3:        return "bool3";
-	case HLSLBaseType_Bool4:        return "bool4";
+    case HLSLBaseType_Bool2:        return "bool2";
+    case HLSLBaseType_Bool3:        return "bool3";
+    case HLSLBaseType_Bool4:        return "bool4";
     case HLSLBaseType_Int:          return "int";
     case HLSLBaseType_Int2:         return "int2";
     case HLSLBaseType_Int3:         return "int3";
@@ -53,17 +53,23 @@ static const char* GetTypeName(const HLSLType& type)
     case HLSLBaseType_Uint2:        return "uint2";
     case HLSLBaseType_Uint3:        return "uint3";
     case HLSLBaseType_Uint4:        return "uint4";
-    case HLSLBaseType_Texture:      return "texture";
-    case HLSLBaseType_Sampler:      return "sampler";
-    case HLSLBaseType_Sampler2D:    return "sampler2D";
-    case HLSLBaseType_Sampler3D:    return "sampler3D";
-    case HLSLBaseType_SamplerCube:  return "samplerCUBE";
-    case HLSLBaseType_Sampler2DShadow:  return "sampler2DShadow";
-    case HLSLBaseType_Sampler2DMS:  return "sampler2DMS";
-    case HLSLBaseType_Sampler2DArray:    return "sampler2DArray";
-    case HLSLBaseType_UserDefined:  return type.typeName;
+    case HLSLBaseType_Texture1D:    return "Texture1D";
+    case HLSLBaseType_Texture2D:    return "Texture2D";
+    case HLSLBaseType_Texture3D:    return "Texture3D";
+    case HLSLBaseType_TextureCube:  return "TextureCube";
+    case HLSLBaseType_TextureCubeArray: return "TextureCubeArray";
+    case HLSLBaseType_Texture2DMS:      return "Texture2DMS";
+    case HLSLBaseType_Texture1DArray:   return "Texture1DArray";
+    case HLSLBaseType_Texture2DArray:   return "Texture2DArray";
+    case HLSLBaseType_Texture2DMSArray: return "Texture2DMSArray";
+    case HLSLBaseType_UserDefined:      return userDefined;
     default: return "<unknown type>";
     }
+}
+
+static const char* GetTypeName(const HLSLType& type)
+{
+    return GetBaseTypeName(type.baseType, type.typeName);
 }
 
 static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
@@ -89,12 +95,6 @@ HLSLGenerator::HLSLGenerator()
     m_legacy                        = false;
     m_target                        = Target_VertexShader;
     m_isInsideBuffer                = false;
-    m_textureSampler2DStruct[0]     = 0;
-    m_textureSampler2DCtor[0]       = 0;
-    m_textureSampler3DStruct[0]     = 0;
-    m_textureSampler3DCtor[0]       = 0;
-    m_textureSamplerCubeStruct[0]   = 0;
-    m_textureSamplerCubeCtor[0]     = 0;
     m_tex2DFunction[0]              = 0;
     m_tex2DProjFunction[0]          = 0;
     m_tex2DLodFunction[0]           = 0;
@@ -245,14 +245,6 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
         }
     }
 
-    ChooseUniqueName("TextureSampler2D",            m_textureSampler2DStruct,   sizeof(m_textureSampler2DStruct));
-    ChooseUniqueName("CreateTextureSampler2D",      m_textureSampler2DCtor,     sizeof(m_textureSampler2DCtor));
-    ChooseUniqueName("TextureSampler2DShadow",      m_textureSampler2DShadowStruct, sizeof(m_textureSampler2DShadowStruct));
-    ChooseUniqueName("CreateTextureSampler2DShadow",m_textureSampler2DShadowCtor,   sizeof(m_textureSampler2DShadowCtor));
-    ChooseUniqueName("TextureSampler3D",            m_textureSampler3DStruct,   sizeof(m_textureSampler3DStruct));
-    ChooseUniqueName("CreateTextureSampler3D",      m_textureSampler3DCtor,     sizeof(m_textureSampler3DCtor));
-    ChooseUniqueName("TextureSamplerCube",          m_textureSamplerCubeStruct, sizeof(m_textureSamplerCubeStruct));
-    ChooseUniqueName("CreateTextureSamplerCube",    m_textureSamplerCubeCtor,   sizeof(m_textureSamplerCubeCtor));
     ChooseUniqueName("tex2D",                       m_tex2DFunction,            sizeof(m_tex2DFunction));
     ChooseUniqueName("tex2Dproj",                   m_tex2DProjFunction,        sizeof(m_tex2DProjFunction));
     ChooseUniqueName("tex2Dlod",                    m_tex2DLodFunction,         sizeof(m_tex2DLodFunction));
@@ -274,62 +266,17 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
     ChooseUniqueName("texCUBEsize",                 m_texCubeSizeFunction,      sizeof(m_texCubeSizeFunction));
 
     if (!m_legacy)
-    {
-        // @@ Only emit code for sampler types that are actually used?
+    {        
 
-        m_writer.WriteLine(0, "struct %s {", m_textureSampler2DStruct);
-        m_writer.WriteLine(1, "Texture2D    t;");
-        m_writer.WriteLine(1, "SamplerState s;");
-        m_writer.WriteLine(0, "};");
-
-        m_writer.WriteLine(0, "struct %s {", m_textureSampler2DShadowStruct);
-        m_writer.WriteLine(1, "Texture2D                t;");
-        m_writer.WriteLine(1, "SamplerComparisonState   s;");
-        m_writer.WriteLine(0, "};");
-
-        m_writer.WriteLine(0, "struct %s {", m_textureSampler3DStruct);
-        m_writer.WriteLine(1, "Texture3D    t;");
-        m_writer.WriteLine(1, "SamplerState s;");
-        m_writer.WriteLine(0, "};");
-
-        m_writer.WriteLine(0, "struct %s {", m_textureSamplerCubeStruct);
-        m_writer.WriteLine(1, "TextureCube  t;");
-        m_writer.WriteLine(1, "SamplerState s;");
-        m_writer.WriteLine(0, "};");
-
-        m_writer.WriteLine(0, "%s %s(Texture2D t, SamplerState s) {", m_textureSampler2DStruct, m_textureSampler2DCtor);
-        m_writer.WriteLine(1, "%s ts;", m_textureSampler2DStruct);
-        m_writer.WriteLine(1, "ts.t = t; ts.s = s;");
-        m_writer.WriteLine(1, "return ts;");
-        m_writer.WriteLine(0, "}");
-
-        m_writer.WriteLine(0, "%s %s(Texture2D t, SamplerComparisonState s) {", m_textureSampler2DShadowStruct, m_textureSampler2DShadowCtor);
-        m_writer.WriteLine(1, "%s ts;", m_textureSampler2DShadowStruct);
-        m_writer.WriteLine(1, "ts.t = t; ts.s = s;");
-        m_writer.WriteLine(1, "return ts;");
-        m_writer.WriteLine(0, "}");
-
-        m_writer.WriteLine(0, "%s %s(Texture3D t, SamplerState s) {", m_textureSampler3DStruct, m_textureSampler3DCtor);
-        m_writer.WriteLine(1, "%s ts;", m_textureSampler3DStruct);
-        m_writer.WriteLine(1, "ts.t = t; ts.s = s;");
-        m_writer.WriteLine(1, "return ts;");
-        m_writer.WriteLine(0, "}");
-
-        m_writer.WriteLine(0, "%s %s(TextureCube t, SamplerState s) {", m_textureSamplerCubeStruct, m_textureSamplerCubeCtor);
-        m_writer.WriteLine(1, "%s ts;", m_textureSamplerCubeStruct);
-        m_writer.WriteLine(1, "ts.t = t; ts.s = s;");
-        m_writer.WriteLine(1, "return ts;");
-        m_writer.WriteLine(0, "}");
-        
-        if (m_tree->GetContainsString("tex2D")) 
+        /*if (m_tree->GetContainsString("Texture2D<float>")) 
         {
-            m_writer.WriteLine(0, "float4 %s(%s ts, float2 texCoord) {", m_tex2DFunction, m_textureSampler2DStruct);
-            m_writer.WriteLine(1, "return ts.t.Sample(ts.s, texCoord);");
+            m_writer.WriteLine(0, "float4 %s(%s t, %s s, float2 texCoord) {", m_tex2DFunction, );
+            m_writer.WriteLine(1, "return t.Sample(s, texCoord);");
             m_writer.WriteLine(0, "}");
         }
-        if (m_tree->GetContainsString("tex2Dproj"))
+        /*if (m_tree->GetContainsString("tex2Dproj"))
         {
-            m_writer.WriteLine(0, "float4 %s(%s ts, float4 texCoord) {", m_tex2DProjFunction, m_textureSampler2DStruct);
+            m_writer.WriteLine(0, "float4 %s(%s t, float4 texCoord) {", m_tex2DProjFunction, m_textureSampler2DStruct);
             m_writer.WriteLine(1, "return ts.t.Sample(ts.s, texCoord.xy / texCoord.w);");
             m_writer.WriteLine(0, "}");
         }
@@ -437,7 +384,7 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
             m_writer.WriteLine(0, "int %s(%s ts) {", m_texCubeSizeFunction, m_textureSamplerCubeStruct);
             m_writer.WriteLine(1, "int size; ts.t.GetDimensions(size); return size;");   // @@ Not tested, does this return a single value?
             m_writer.WriteLine(0, "}");
-        }
+        }*/
     }
 
     HLSLRoot* root = m_tree->GetRoot();
@@ -473,27 +420,44 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     {
         HLSLIdentifierExpression* identifierExpression = static_cast<HLSLIdentifierExpression*>(expression);
         const char* name = identifierExpression->name;
-        if (!m_legacy && IsSamplerType(identifierExpression->expressionType) && identifierExpression->global)
+        if (!m_legacy && IsReadTextureType(identifierExpression->expressionType) && identifierExpression->global)
         {
-            // @@ Handle generic sampler type.
+            const char* samplerType = GetBaseTypeName(identifierExpression->expressionType.samplerType);
+            int samplerCount = identifierExpression->expressionType.sampleCount;
 
-            if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D)
+            if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture1D)
             {
-                m_writer.Write("%s(%s_texture, %s_sampler)", m_textureSampler2DCtor, name, name);
+                m_writer.Write("Texture1D<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
             }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler3D)
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2D)
             {
-                m_writer.Write("%s(%s_texture, %s_sampler)", m_textureSampler3DCtor, name, name);
+                m_writer.Write("Texture2D<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
             }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_SamplerCube)
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture3D)
             {
-                m_writer.Write("%s(%s_texture, %s_sampler)", m_textureSamplerCubeCtor, name, name);
+                m_writer.Write("Texture3D<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
             }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2DShadow)
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_TextureCube)
             {
-                m_writer.Write("%s(%s_texture, %s_sampler)", m_textureSampler2DShadowCtor, name, name);
+                m_writer.Write("TextureCube<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
             }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2DMS)
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_TextureCubeArray)
+            {
+                m_writer.Write("TextureCubeArray<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
+            }
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMS)
+            {
+                m_writer.Write("Texture2DMS<%s, %d> %s_texture, SamplerState %s_sampler", samplerType, samplerCount, name, name);
+            }
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture1DArray)
+            {
+                m_writer.Write("Texture1DArray<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
+            }
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DArray)
+            {
+                m_writer.Write("Texture2DArray<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
+            }
+            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMSArray)
             {
                 m_writer.Write("%s", name);
             }
@@ -515,6 +479,8 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     else if (expression->nodeType == HLSLNodeType_ConstructorExpression)
     {
         HLSLConstructorExpression* constructorExpression = static_cast<HLSLConstructorExpression*>(expression);
+        if(IsReadTextureType(constructorExpression->type))
+            Log_Error("Texture type %s is not constructable", GetTypeName(constructorExpression->type));
         m_writer.Write("%s(", GetTypeName(constructorExpression->type));
         OutputExpressionList(constructorExpression->argument);
         m_writer.Write(")");
@@ -868,9 +834,21 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             // so that we can supply our own function which will be the actual entry point.
             const char* functionName   = function->name;
             const char* returnTypeName = GetTypeName(function->returnType);
+            const char* samplerTypeName = GetBaseTypeName(function->returnType.samplerType);
 
             m_writer.BeginLine(indent, function->fileName, function->line);
-            m_writer.Write("%s %s(", returnTypeName, functionName);
+            if (IsMultisampledTexture(function->returnType.baseType))
+            {
+                m_writer.Write("%s<%s, %d>, %s(", returnTypeName, samplerTypeName, function->returnType.sampleCount, functionName);
+            }
+            else if (IsReadTextureType(function->returnType))
+            {
+                m_writer.Write("%s<%s> %s(", returnTypeName, samplerTypeName, functionName);
+            }
+            else
+            {
+                m_writer.Write("%s %s(", returnTypeName, functionName);
+            }
 
             OutputArguments(function->argument);
 
@@ -981,9 +959,9 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
 
 void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 {
-    bool isSamplerType = IsSamplerType(declaration->type);
+    bool isReadTextureType = IsReadTextureType(declaration->type);
 
-    if (!m_legacy && isSamplerType)
+    if (!m_legacy && isReadTextureType)
     {
         int reg = -1;
         if (declaration->registerName != NULL)
@@ -991,28 +969,15 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             sscanf(declaration->registerName, "s%d", &reg);
         }
 
-        const char* textureType = NULL;
+        const char* textureType = GetTypeName(declaration->type);
         const char* samplerType = "SamplerState";
         // @@ Handle generic sampler type.
 
-        if (declaration->type.baseType == HLSLBaseType_Sampler2D)
-        {
-            textureType = "Texture2D";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_Sampler3D)
-        {
-            textureType = "Texture3D";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_SamplerCube)
-        {
-            textureType = "TextureCube";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_Sampler2DShadow)
-        {
-            textureType = "Texture2D";
-            samplerType = "SamplerComparisonState";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_Sampler2DMS)
+        //if (declaration->type.baseType == HLSLBaseType_Texture2DShadow)
+        //{
+        //    samplerType = "SamplerComparisonState";
+        //}
+        if (declaration->type.baseType == HLSLBaseType_Texture2DMS)
         {
             textureType = "Texture2DMS<float4>";  // @@ Is template argument required?
             samplerType = NULL;
@@ -1022,11 +987,11 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
         {
             if (reg != -1)
             {
-                m_writer.Write("%s %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, declaration->name, reg, samplerType, declaration->name, reg);
+                m_writer.Write("%s<%s> %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, declaration->type.samplerType, declaration->type.sampleCount, declaration->name, reg, samplerType, declaration->name, reg);
             }
             else
             {
-                m_writer.Write("%s %s_texture; %s %s_sampler", textureType, declaration->name, samplerType, declaration->name);
+                m_writer.Write("%s<%s> %s_texture; %s %s_sampler", textureType, declaration->type.samplerType, declaration->name, samplerType, declaration->name);
             }
         }
         else
@@ -1057,29 +1022,6 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
 {
     const char* typeName = GetTypeName(type);
-    if (!m_legacy)
-    {
-        if (type.baseType == HLSLBaseType_Sampler2D)
-        {
-            typeName = m_textureSampler2DStruct;
-        }
-        else if (type.baseType == HLSLBaseType_Sampler3D)
-        {
-            typeName = m_textureSampler3DStruct;
-        }
-        else if (type.baseType == HLSLBaseType_SamplerCube)
-        {
-            typeName = m_textureSamplerCubeStruct;
-        }
-        else if (type.baseType == HLSLBaseType_Sampler2DShadow)
-        {
-            typeName = m_textureSampler2DShadowStruct;
-        }
-        else if (type.baseType == HLSLBaseType_Sampler2DMS)
-        {
-            typeName = "Texture2DMS<float4>";
-        }
-    }
 
     if (type.flags & HLSLTypeFlag_Const)
     {
@@ -1112,7 +1054,21 @@ void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
         m_writer.Write("sample ");
     }
 
-    m_writer.Write("%s ", typeName);
+    if (!m_legacy && IsReadTextureType(type))
+    {
+        if (IsMultisampledTexture(type.baseType))
+        {
+            m_writer.Write("%s<%s, %d> ", typeName, GetBaseTypeName(type.samplerType), type.sampleCount);
+        }
+        else
+        {
+            m_writer.Write("%s<%s> ", typeName, GetBaseTypeName(type.samplerType));
+        }
+    }
+    else
+    {
+        m_writer.Write("%s ", typeName);
+    }
 }
 
 void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic/*=NULL*/, const char* registerName/*=NULL*/, HLSLExpression * assignment/*=NULL*/)
@@ -1147,7 +1103,7 @@ void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name
         }
     }
 
-    if (assignment != NULL && !IsSamplerType(type))
+    if (assignment != NULL && !IsReadTextureType(type))
     {
         m_writer.Write(" = ");
         if (type.array)
