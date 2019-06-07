@@ -27,7 +27,7 @@ class HLSLParser
 
 public:
 
-    HLSLParser(Allocator* allocator, const char* fileName, const char* buffer, size_t length);
+    HLSLParser(Allocator* allocator, Logger* logger, const char* fileName, const char* buffer, size_t length);
 
     bool Parse(HLSLTree* tree);
 

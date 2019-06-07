@@ -71,29 +71,6 @@ int String_ToIntegerHex(const char * str, char ** endptr) {
 	return strtol(str, endptr, 16);
 }
 
-
-
-// Engine/Log.cpp
-
-void Log_Error(const char * format, ...) {
-    va_list args;
-    va_start(args, format);
-    Log_ErrorArgList(format, args);
-    va_end(args);
-}
-
-void Log_ErrorArgList(const char * format, va_list args) {
-#if 1 // @@ Don't we need to do this?
-    va_list tmp;
-    va_copy(tmp, args);
-    vprintf( format, args );
-    va_end(tmp);
-#else
-    vprintf( format, args );
-#endif
-}
-
-
 // Engine/StringPool.cpp
 
 StringPool::StringPool(Allocator * allocator) : stringArray(allocator) {

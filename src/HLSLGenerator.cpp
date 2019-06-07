@@ -88,8 +88,9 @@ static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* 
     return numArguments;
 }
 
-HLSLGenerator::HLSLGenerator()
+HLSLGenerator::HLSLGenerator(Logger* logger)
 {
+    m_logger                        = logger;
     m_tree                          = NULL;
     m_entryName                     = NULL;
     m_legacy                        = false;
@@ -480,7 +481,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     {
         HLSLConstructorExpression* constructorExpression = static_cast<HLSLConstructorExpression*>(expression);
         if(IsReadTextureType(constructorExpression->type))
-            Log_Error("Texture type %s is not constructable", GetTypeName(constructorExpression->type));
+            m_logger->LogError("Texture type %s is not constructable", GetTypeName(constructorExpression->type));
         m_writer.Write("%s(", GetTypeName(constructorExpression->type));
         OutputExpressionList(constructorExpression->argument);
         m_writer.Write(")");

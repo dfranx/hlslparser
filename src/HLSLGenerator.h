@@ -16,6 +16,7 @@
 namespace M4
 {
 
+struct Logger;
 class  HLSLTree;
 struct HLSLFunction;
 struct HLSLStruct;
@@ -35,7 +36,7 @@ public:
         Target_PixelShader,
     };
 
-    HLSLGenerator();
+    HLSLGenerator(Logger* logger);
 
     bool Generate(HLSLTree* tree, Target target, const char* entryName, bool legacy);
     const char* GetResult() const;
@@ -59,6 +60,7 @@ private:
 private:
 
     CodeWriter      m_writer;
+    Logger*         m_logger;
 
     const HLSLTree* m_tree;
     const char*     m_entryName;

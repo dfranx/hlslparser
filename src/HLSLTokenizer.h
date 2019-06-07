@@ -109,7 +109,7 @@ public:
     static const int s_maxIdentifier = 255 + 1;
 
     /** The file name is only used for error reporting. */
-    HLSLTokenizer(const char* fileName, const char* buffer, size_t length);
+    HLSLTokenizer(Logger* logger, const char* fileName, const char* buffer, size_t length);
 
     /** Advances to the next token in the stream. */
     void Next();
@@ -150,6 +150,7 @@ private:
 
 private:
 
+    Logger*             m_logger;
     const char*         m_fileName;
     const char*         m_buffer;
     const char*         m_bufferEnd;

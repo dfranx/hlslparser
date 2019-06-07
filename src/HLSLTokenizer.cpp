@@ -109,8 +109,9 @@ static bool GetIsNumberSeparator(char c)
     return c == 0 || isspace(c) || GetIsSymbol(c);
 }
 
-HLSLTokenizer::HLSLTokenizer(const char* fileName, const char* buffer, size_t length)
+HLSLTokenizer::HLSLTokenizer(Logger* logger, const char* fileName, const char* buffer, size_t length)
 {
+    m_logger            = logger;
     m_buffer            = buffer;
     m_bufferEnd         = buffer + length;
     m_fileName          = fileName;
@@ -551,7 +552,7 @@ void HLSLTokenizer::Error(const char* format, ...)
     int result = vsnprintf(buffer, sizeof(buffer) - 1, format, args);
     va_end(args);
 
-    Log_Error("%s(%d) : %s\n", m_fileName, m_lineNumber, buffer);
+    m_logger->LogError(m_logger->m_userData, "%s(%d) : %s\n", m_fileName, m_lineNumber, buffer);
 } 
 
 void HLSLTokenizer::GetTokenName(char buffer[s_maxIdentifier]) const

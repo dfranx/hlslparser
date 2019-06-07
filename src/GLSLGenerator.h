@@ -55,7 +55,7 @@ public:
         }
     };
 
-    GLSLGenerator();
+    GLSLGenerator(Logger* logger);
     
     bool Generate(HLSLTree* tree, Target target, Version versiom, const char* entryName, const Options& options = Options());
     const char* GetResult() const;
@@ -123,6 +123,7 @@ private:
     static const char*  s_reservedWord[s_numReservedWords];
 
     CodeWriter          m_writer;
+    Logger*             m_logger;
 
     HLSLTree*           m_tree;
     const char*         m_entryName;

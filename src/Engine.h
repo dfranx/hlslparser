@@ -37,6 +37,15 @@ struct Allocator
     void* (*Realloc)(void* userData, void* ptr, size_t size, size_t count);
 };
 
+struct Logger 
+{
+    void* m_userData;
+
+    void (*LogError)(void* userData, const char* format, ...);
+    void (*LogErrorArgList)(void* userData, const char* format, va_list args);
+};
+
+
 
 // Engine/String.h
 
@@ -47,13 +56,6 @@ bool String_Equal(const char * a, const char * b);
 bool String_EqualNoCase(const char * a, const char * b);
 double String_ToDouble(const char * str, char ** end);
 int String_ToInteger(const char * str, char ** end);
-
-
-// Engine/Log.h
-
-void Log_Error(const char * format, ...);
-void Log_ErrorArgList(const char * format, va_list args);
-
 
 // Engine/Array.h
 
