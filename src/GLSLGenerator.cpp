@@ -205,9 +205,10 @@ static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* 
     return numArguments;
 }
 
-GLSLGenerator::GLSLGenerator() :
+GLSLGenerator::GLSLGenerator(Logger* logger) :
     m_writer(/* writeFileNames= */ false)
 {
+    m_logger                    = logger;
     m_tree                      = NULL;
     m_entryName                 = NULL;
     m_target                    = Target_VertexShader;
@@ -1940,7 +1941,7 @@ void GLSLGenerator::Error(const char* format, ...)
 
     va_list arg;
     va_start(arg, format);
-    Log_ErrorArgList(format, arg);
+    m_logger->LogErrorArgList(m_logger->m_userData, format, arg);
     va_end(arg);
 } 
 

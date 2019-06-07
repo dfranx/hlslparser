@@ -49,6 +49,47 @@ void PrintUsage()
 		<< " -metal      generate MSL\n";
 }
 
+//Allocator functions
+
+void* New(void* userData, size_t size)
+{
+    (void)userData;
+    return malloc(size);
+}
+
+void* NewArray(void* userData, size_t size, size_t count)
+{
+    (void)userData;
+    return malloc(size * count);
+}
+
+void Delete(void* userData, void* ptr)
+{
+    (void)userData;
+    free(ptr);
+}
+
+void* Realloc(void* userData, void* ptr, size_t size, size_t count)
+{
+    (void)userData;
+    return realloc(ptr, size * count);
+}
+
+//Logger functions
+void LogErrorArgs(void* userData, const char* format, va_list args)
+{
+    (void)userData;
+    vprintf(format, args);
+}
+
+void LogError(void* userData, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    LogErrorArgs(userData, format, args);
+    va_end(args);
+}
+
 int main( int argc, char* argv[] )
 {
 	using namespace M4;
@@ -103,7 +144,7 @@ int main( int argc, char* argv[] )
 		}
 		else
 		{
-			Log_Error( "Too many arguments\n" );
+			LogError(NULL, "Too many arguments\n" );
 			PrintUsage();
 			return 1;
 		}
@@ -111,7 +152,7 @@ int main( int argc, char* argv[] )
 
 	if( fileName == NULL || entryName == NULL )
 	{
-		Log_Error( "Missing arguments\n" );
+		LogError(NULL, "Missing arguments\n" );
 		PrintUsage();
 		return 1;
 	}
@@ -121,21 +162,31 @@ int main( int argc, char* argv[] )
 
 	// Parse input file
 	Allocator allocator;
-	HLSLParser parser( &allocator, fileName, source.data(), source.size() );
-	HLSLTree tree( &allocator );
-	if( !parser.Parse( &tree ) )
+    allocator.m_userData = NULL;
+    allocator.New = New;
+    allocator.NewArray = NewArray;
+    allocator.Delete = Delete;
+    allocator.Realloc = Realloc;
+
+    Logger logger;
+    logger.m_userData = NULL;
+    logger.LogError = LogError;
+    logger.LogErrorArgList = LogErrorArgs;
+	HLSLParser parser(&allocator, &logger, fileName, source.data(), source.size());
+	HLSLTree tree(&allocator);
+	if(!parser.Parse(&tree))
 	{
-		Log_Error( "Parsing failed, aborting\n" );
+		LogError(NULL, "Parsing failed, aborting\n" );
 		return 1;
 	}
 
 	// Generate output
 	if (language == Language_GLSL)
 	{
-		GLSLGenerator generator;
+		GLSLGenerator generator(&logger);
 		if (!generator.Generate( &tree, GLSLGenerator::Target(target), GLSLGenerator::Version_140, entryName ))
 		{
-			Log_Error( "Translation failed, aborting\n" );
+			LogError(NULL, "Translation failed, aborting\n" );
 			return 1;
 		}
 
@@ -143,10 +194,10 @@ int main( int argc, char* argv[] )
 	}
 	else if (language == Language_HLSL)
 	{
-		HLSLGenerator generator;
+		HLSLGenerator generator(&logger);
 		if (!generator.Generate( &tree, HLSLGenerator::Target(target), entryName, language == Language_LegacyHLSL ))
 		{
-			Log_Error( "Translation failed, aborting\n" );
+			LogError(NULL, "Translation failed, aborting\n" );
 			return 1;
 		}
 
