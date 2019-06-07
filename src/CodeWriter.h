@@ -22,7 +22,7 @@
 namespace M4
 {
 
-class Allocator;
+struct Allocator;
 
 /**
  * This class is used for outputting code. It handles indentation and inserting #line markers

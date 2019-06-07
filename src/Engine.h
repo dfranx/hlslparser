@@ -27,20 +27,14 @@ namespace M4 {
 
 // Engine/Allocator.h
 
-class Allocator {
-public:
-    template <typename T> T * New() {
-        return (T *)malloc(sizeof(T));
-    }
-    template <typename T> T * New(size_t count) {
-        return (T *)malloc(sizeof(T) * count);
-    }
-    template <typename T> void Delete(T * ptr) {
-        free((void *)ptr);
-    }
-    template <typename T> T * Realloc(T * ptr, size_t count) {
-        return (T *)realloc(ptr, sizeof(T) * count);
-    }
+struct Allocator 
+{
+    void* m_userData;
+
+    void* (*New)(void* userData, size_t size);
+    void* (*NewArray)(void* userData, size_t size, size_t count);
+    void (*Delete)(void* userData, void* ptr);
+    void* (*Realloc)(void* userData, void* ptr, size_t size, size_t count);
 };
 
 
@@ -89,7 +83,7 @@ template <typename T>
 class Array {
 public:
     Array(Allocator * allocator) : allocator(allocator), buffer(NULL), size(0), capacity(0) {}
-    ~Array() { allocator->Delete<T>(buffer); }
+    ~Array() { allocator->Delete(allocator->m_userData, buffer); }
 
     void PushBack(const T & val) {
         ASSERT(&val < buffer || &val >= buffer+size);
@@ -153,13 +147,13 @@ private:
         if (new_capacity == 0) {
             // free the buffer.
             if (buffer != NULL) {
-                allocator->Delete<T>(buffer);
+                allocator->Delete(allocator->m_userData, buffer);
                 buffer = NULL;
             }
         }
         else {
             // realloc the buffer
-            buffer = allocator->Realloc<T>(buffer, new_capacity);
+            buffer = (T*)allocator->Realloc(allocator->m_userData, buffer, sizeof(T), new_capacity);
         }
 
         capacity = new_capacity;
