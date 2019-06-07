@@ -53,9 +53,9 @@ static bool IsUintVectorType(const HLSLBaseType& type)
     return type == HLSLBaseType_Uint || type == HLSLBaseType_Uint2 || type == HLSLBaseType_Uint3 || type == HLSLBaseType_Uint4;
 }
 
-static const char* GetBaseTypeName(const HLSLBaseType& type, const HLSLBaseType& samplerType, const char* userDefined)
+static const char* GetTypeName(const HLSLType& type)
 {
-    switch (type)
+    switch (type.baseType)
     {
     case HLSLBaseType_Void:         return "void";
     case HLSLBaseType_Float:        return "float";
@@ -85,103 +85,80 @@ static const char* GetBaseTypeName(const HLSLBaseType& type, const HLSLBaseType&
     case HLSLBaseType_Uint3:        return "uvec3";
     case HLSLBaseType_Uint4:        return "uvec4";
     case HLSLBaseType_Texture1D:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "sampler1D";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isampler1D";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usampler1D";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_Texture2D:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "sampler2D";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isampler2D";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usampler2D";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_Texture3D:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "sampler3D";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isampler3D";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usampler3D";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_TextureCube:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "samplerCube";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isamplerCube";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usamplerCube";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_TextureCubeArray:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "samplerCubeArray";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isamplerCubeArray";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usamplerCubeArray";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_Texture2DMS:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "sampler2DMS";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isampler2DMS";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usampler2DMS";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_Texture1DArray:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "sampler1DArray";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isampler1DArray";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usampler1DArray";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_Texture2DArray:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "sampler2DArray";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isampler2DArray";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usampler2DArray";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
     case HLSLBaseType_Texture2DMSArray:
-        if (IsFloatVectorType(samplerType))
+        if (IsFloatVectorType(type.samplerType))
             return "sampler2DMSArray";
-        else if (IsIntVectorType(samplerType))
+        else if (IsIntVectorType(type.samplerType))
             return "isampler2DMSArray";
-        else if (IsUintVectorType(samplerType))
+        else if (IsUintVectorType(type.samplerType))
             return "usampler2DMSArray";
-        else
-            Log_Error("Unsupported sampler type %s", GetBaseTypeName(samplerType, HLSLBaseType_Auto, ""));
         return "?";
-    case HLSLBaseType_UserDefined:  return userDefined;
+    case HLSLBaseType_UserDefined:  return type.typeName;
     default: return "?";
     }
-}
-
-static const char* GetTypeName(const HLSLType& type)
-{
-    return GetBaseTypeName(type.baseType, type.samplerType, type.typeName);
 }
 
 static bool GetCanImplicitCast(const HLSLType& srcType, const HLSLType& dstType)
