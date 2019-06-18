@@ -108,10 +108,10 @@ struct Intrinsic
     HLSLArgument    argument[4];
 };
     
-Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType samplerType, HLSLBaseType arg2)
+Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2)
 {
     Intrinsic i(name, returnType, arg1, arg2);
-    i.argument[0].type.samplerType = samplerType;
+    i.argument[0].type.samplerType = returnType;
     return i;
 }
 
@@ -442,22 +442,22 @@ struct BaseTypeDescription
         Intrinsic( name, HLSLBaseType_Half4,   HLSLBaseType_Half4,   HLSLBaseType_Half4,  HLSLBaseType_Half4 )
 
 #define SAMPLING_INTRINSIC_FUNCTION(name, sampler, arg1) \
-        SamplerIntrinsic(name, HLSLBaseType_Float, sampler, HLSLBaseType_Float, arg1),   \
-        SamplerIntrinsic(name, HLSLBaseType_Float2, sampler, HLSLBaseType_Float2, arg1),   \
-        SamplerIntrinsic(name, HLSLBaseType_Float3, sampler, HLSLBaseType_Float3, arg1),   \
-        SamplerIntrinsic(name, HLSLBaseType_Float4, sampler, HLSLBaseType_Float4, arg1),   \
-        SamplerIntrinsic(name, HLSLBaseType_Half, sampler, HLSLBaseType_Half, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Half2, sampler, HLSLBaseType_Half2, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Half3, sampler, HLSLBaseType_Half3, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Half4, sampler, HLSLBaseType_Half4, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Int, sampler, HLSLBaseType_Int, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Int2, sampler, HLSLBaseType_Int2, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Int3, sampler, HLSLBaseType_Int3, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Int4, sampler, HLSLBaseType_Int4, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Uint, sampler, HLSLBaseType_Uint, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Uint2, sampler, HLSLBaseType_Uint2, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Uint3, sampler, HLSLBaseType_Uint3, arg1), \
-        SamplerIntrinsic(name, HLSLBaseType_Uint4, sampler, HLSLBaseType_Uint4, arg1)
+        SamplerIntrinsic(name, HLSLBaseType_Float, sampler, arg1),   \
+        SamplerIntrinsic(name, HLSLBaseType_Float2, sampler, arg1),   \
+        SamplerIntrinsic(name, HLSLBaseType_Float3, sampler, arg1),   \
+        SamplerIntrinsic(name, HLSLBaseType_Float4, sampler, arg1),   \
+        SamplerIntrinsic(name, HLSLBaseType_Half, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Half2, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Half3, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Half4, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Int, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Int2, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Int3, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Int4, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint2, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint3, sampler, arg1), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint4, sampler, arg1)
     
 const Intrinsic _intrinsic[] =
     {
@@ -620,7 +620,7 @@ const Intrinsic _intrinsic[] =
         Intrinsic("tex3Dsize", HLSLBaseType_Int3, HLSLBaseType_Texture3D),
 
         SAMPLING_INTRINSIC_FUNCTION("texCube", HLSLBaseType_TextureCube, HLSLBaseType_Float3),
-        SAMPLING_INTRINSIC_FUNCTION("texCubelod", HLSLBaseType_TextureCube, HLSLBaseType_Float4),
+        SAMPLING_INTRINSIC_FUNCTION("texCubeLod", HLSLBaseType_TextureCube, HLSLBaseType_Float4),
         Intrinsic("texCubebias", HLSLBaseType_Float4, HLSLBaseType_TextureCube, HLSLBaseType_Float4),
         Intrinsic("texCubesize", HLSLBaseType_Int, HLSLBaseType_TextureCube),
 
