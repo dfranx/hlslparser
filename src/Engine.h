@@ -85,7 +85,7 @@ template <typename T>
 class Array {
 public:
     Array(Allocator * allocator) : allocator(allocator), buffer(NULL), size(0), capacity(0) {}
-    ~Array() { allocator->Delete(allocator->m_userData, buffer); }
+    ~Array() { DestroyRange(buffer, 0, size);  allocator->Delete(allocator->m_userData, (void*)buffer); }
 
     void PushBack(const T & val) {
         ASSERT(&val < buffer || &val >= buffer+size);
