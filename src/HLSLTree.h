@@ -284,6 +284,7 @@ enum HLSLAttributeType
     HLSLAttributeType_Branch,
     HLSLAttributeType_Flatten,
     HLSLAttributeType_NoFastMath,
+    HLSLAttributeType_NumThreads,
 };
 
 enum HLSLAddressSpace

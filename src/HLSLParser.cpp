@@ -3001,10 +3001,20 @@ bool HLSLParser::ParseAttributeList(HLSLAttribute*& firstAttribute)
 
         HLSLAttribute * attribute = m_tree->AddNode<HLSLAttribute>(fileName, line);
         
-        if (strcmp(identifier, "unroll") == 0) attribute->attributeType = HLSLAttributeType_Unroll;
-        else if (strcmp(identifier, "flatten") == 0) attribute->attributeType = HLSLAttributeType_Flatten;
-        else if (strcmp(identifier, "branch") == 0) attribute->attributeType = HLSLAttributeType_Branch;
-        else if (strcmp(identifier, "nofastmath") == 0) attribute->attributeType = HLSLAttributeType_NoFastMath;
+        if (String_Equal(identifier, "unroll")) attribute->attributeType = HLSLAttributeType_Unroll;
+        else if (String_Equal(identifier, "flatten")) attribute->attributeType = HLSLAttributeType_Flatten;
+        else if (String_Equal(identifier, "branch")) attribute->attributeType = HLSLAttributeType_Branch;
+        else if (String_Equal(identifier, "nofastmath")) attribute->attributeType = HLSLAttributeType_NoFastMath;
+        else if (String_Equal(identifier, "numthreads")) attribute->attributeType = HLSLAttributeType_NumThreads;
+        {
+            Expect('(');
+            int numExpressions;
+            ParseExpressionList(')', false, attribute->argument, numExpressions);
+            if (numExpressions != 3)
+            {
+                m_tokenizer.Error("Syntax Error! numThreads expects three integral expressions");
+            }
+        }
         
         // @@ parse arguments, () not required if attribute constructor has no arguments.
 

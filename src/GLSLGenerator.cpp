@@ -288,6 +288,10 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
     {
         m_writer.WriteLine(0, "#version 150");
     }
+    else if (m_version == Version_430)
+    {
+        m_writer.WriteLine(0, "#version 430");
+    }
     else if (m_version == Version_100_ES)
     {
         m_writer.WriteLine(0, "#version 100");
@@ -1061,7 +1065,6 @@ void GLSLGenerator::OutputArguments(HLSLArgument* argument)
 
 void GLSLGenerator::OutputStatements(int indent, HLSLStatement* statement, const HLSLType* returnType)
 {
-
     while (statement != NULL)
     {
         if (statement->hidden)
@@ -1069,6 +1072,8 @@ void GLSLGenerator::OutputStatements(int indent, HLSLStatement* statement, const
             statement = statement->nextStatement;
             continue;
         }
+
+        OutputStatementAttributes(indent, statement->attributes);
 
         if (statement->nodeType == HLSLNodeType_Declaration)
         {
@@ -1210,9 +1215,38 @@ void GLSLGenerator::OutputStatements(int indent, HLSLStatement* statement, const
         }
 
         statement = statement->nextStatement;
-
     }
+}
 
+void GLSLGenerator::OutputStatementAttributes(int indent, HLSLAttribute* attribute)
+{
+    while (attribute != NULL)
+    {
+        if (m_target == Target_ComputeShader && attribute->attributeType == HLSLAttributeType_NumThreads)
+        {
+            m_writer.BeginLine(indent, attribute->fileName, attribute->line);
+            HLSLExpression* exp1 = attribute->argument;
+            HLSLExpression* exp2 = exp1 ? exp1->nextExpression : NULL;
+            HLSLExpression* exp3 = exp2 ? exp2->nextExpression : NULL;
+            if (exp3 && !exp3->nextExpression)
+            {
+                m_writer.Write("layout(local_size_x = ");
+                OutputExpression(exp1);
+                m_writer.Write(", local_size_y = ");
+                OutputExpression(exp2);
+                m_writer.Write(", local_size_z = ");
+                OutputExpression(exp3);
+                m_writer.Write(") in;");
+                m_writer.EndLine();
+            }
+            else
+            {
+                Error("Something went wrong while declaring numThreads! Expected three Expressions for dispatch dimensions");
+            }
+        }
+
+        attribute = attribute->nextAttribute;
+    }
 }
 
 void GLSLGenerator::OutputBuffer(int indent, HLSLBuffer* buffer)
