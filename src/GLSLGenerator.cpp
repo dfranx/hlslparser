@@ -1015,6 +1015,10 @@ void GLSLGenerator::OutputIdentifier(const char* name)
     {
         name = "dFdy";
     }
+    else if (String_Equal(name, "rsqrt"))
+    {
+        name = "inversesqrt";
+    }
     else 
     {
         // The identifier could be a GLSL reserved word (if it's not also a HLSL reserved word).
