@@ -40,9 +40,8 @@ public:
     enum Flags
     {
         Flag_FlipPositionOutput = 1 << 0,
-        Flag_EmulateConstantBuffer = 1 << 1,
-        Flag_PackMatrixRowMajor = 1 << 2,
-        Flag_LowerMatrixMultiplication = 1 << 3,
+        Flag_PackMatrixRowMajor = 1 << 1,
+        Flag_LowerMatrixMultiplication = 1 << 2,
     };
 
     struct Options
@@ -53,7 +52,7 @@ public:
         Options()
         {
             flags = 0;
-            constantBufferPrefix = "";
+            constantBufferPrefix = "cb_";
         }
     };
 
@@ -107,7 +106,7 @@ private:
     HLSLFunction* FindFunction(HLSLRoot* root, const char* name);
     HLSLStruct* FindStruct(HLSLRoot* root, const char* name);
 
-    void Error(const char* format, ...);
+    void Error(const char* format, ...) const;
 
     /** GLSL contains some reserved words that don't exist in HLSL. This function will
      * sanitize those names. */
@@ -119,6 +118,7 @@ private:
 
     const char* GetBuiltInSemantic(const char* semantic, AttributeModifier modifier, int* outputIndex = 0);
     const char* GetAttribQualifier(AttributeModifier modifier);
+    int MapRegisterNameToIndex(const char* registerName) const;
 
 private:
 
@@ -157,7 +157,7 @@ private:
     char                m_sinCosFunction[64];
 	char                m_bvecTernary[ 64 ];
 
-    bool                m_error;
+    mutable bool                m_error;
 
     char                m_reservedWord[s_numReservedWords][64];
 

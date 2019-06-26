@@ -1192,6 +1192,7 @@ HLSLParser::HLSLParser(Allocator* allocator, Logger* logger, const char* fileNam
     m_tokenizer(logger, fileName, buffer, length),
     m_userTypes(allocator),
     m_variables(allocator),
+    m_buffers(allocator),
     m_functions(allocator)
 {
     m_numGlobals = 0;
@@ -1414,7 +1415,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
             }
             else
             {
-                lastField->nextStatement = field;
+                lastField->nextDeclaration = field;
             }
             lastField = field;
 
@@ -1422,6 +1423,8 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                 return false;
             }
         }
+
+        m_buffers.PushBack(buffer);
 
         statement = buffer;
     }
@@ -2369,6 +2372,12 @@ bool HLSLParser::ParseTerminalExpression(HLSLExpression*& expression, bool& need
                 {
                     // Functions are always global scope.
                     identifierExpression->global = true;
+                }
+                else if (FindBuffer(identifierExpression->name) != NULL)
+                {
+                    identifierExpression->global = true;
+                    identifierExpression->expressionType.baseType = HLSLBaseType_Buffer;
+                    identifierExpression->expressionType.typeName = identifierExpression->name;
                 }
                 else
                 {
@@ -3480,6 +3489,16 @@ bool HLSLParser::GetIsFunction(const char* name) const
     return false;
 }
 
+const HLSLBuffer* HLSLParser::FindBuffer(const char* name) const
+{
+    for (int i = 0; i < m_buffers.GetSize(); ++i)
+    {
+        if (String_Equal(name, m_buffers[i]->name))
+            return m_buffers[i];
+    }
+    return false;
+}
+
 const HLSLFunction* HLSLParser::MatchFunctionCall(const HLSLFunctionCall* functionCall, const char* name)
 {
     const HLSLFunction* matchedFunction     = NULL;
@@ -3571,6 +3590,24 @@ bool HLSLParser::GetMemberType(const HLSLType& objectType, HLSLMemberAccess * me
             field = field->nextField;
         }
 
+        return false;
+    }
+
+    if (objectType.baseType == HLSLBaseType_Buffer)
+    {
+        const HLSLBuffer* buffer = FindBuffer(objectType.typeName);
+        ASSERT(buffer);
+
+        const HLSLDeclaration* field = buffer->field;
+        while (field != NULL)
+        {
+            if (String_Equal(field->name, fieldName))
+            {
+                memberAccess->expressionType = field->type;
+                return true;
+            }
+            field = field->nextDeclaration;
+        }
         return false;
     }
 

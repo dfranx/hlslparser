@@ -115,6 +115,7 @@ enum HLSLBaseType
     HLSLBaseType_Texture2DArray,
     HLSLBaseType_Texture2DMSArray,
     HLSLBaseType_UserDefined,       // struct
+    HLSLBaseType_Buffer, // ConstantBuffer, TextureBuffer
     HLSLBaseType_Expression,        // type argument for defined() sizeof() and typeof().
     HLSLBaseType_Auto,
     

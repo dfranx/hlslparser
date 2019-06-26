@@ -106,6 +106,7 @@ private:
     const HLSLFunction* FindFunction(const HLSLFunction* fun) const;
 
     bool GetIsFunction(const char* name) const;
+    const HLSLBuffer* FindBuffer(const char* name) const;
     
     /** Finds the overloaded function that matches the specified call. */
     const HLSLFunction* MatchFunctionCall(const HLSLFunctionCall* functionCall, const char* name);
@@ -129,6 +130,7 @@ private:
     HLSLTokenizer           m_tokenizer;
     Array<HLSLStruct*>      m_userTypes;
     Array<Variable>         m_variables;
+    Array<HLSLBuffer*>      m_buffers;
     Array<HLSLFunction*>    m_functions;
     int                     m_numGlobals;
 

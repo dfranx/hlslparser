@@ -1255,29 +1255,22 @@ void GLSLGenerator::OutputBuffer(int indent, HLSLBuffer* buffer)
     if (buffer->field == NULL)
         return;
 
-    if (m_options.flags & Flag_EmulateConstantBuffer)
+    m_writer.WriteLineTagged(indent, buffer->fileName, buffer->line, "struct %sType {", buffer->name);
+    HLSLDeclaration* field = buffer->field;
+    while (field != NULL)
     {
-        unsigned int size = 0;
-        LayoutBuffer(buffer, size);
-
-        unsigned int uniformSize = (size + 3) / 4;
-
-        m_writer.WriteLineTagged(indent, buffer->fileName, buffer->line, "uniform vec4 %s%s[%d];", m_options.constantBufferPrefix, buffer->name, uniformSize);
+        m_writer.BeginLine(indent + 1, field->fileName, field->line);
+        OutputDeclaration(field->type, field->name);
+        m_writer.Write(";");
+        m_writer.EndLine();
+        field = (HLSLDeclaration*)field->nextDeclaration;
     }
-    else
-    {
-        m_writer.WriteLineTagged(indent, buffer->fileName, buffer->line, "layout (std140) uniform %s%s {", m_options.constantBufferPrefix, buffer->name);
-        HLSLDeclaration* field = buffer->field;
-        while (field != NULL)
-        {
-            m_writer.BeginLine(indent + 1, field->fileName, field->line);
-            OutputDeclaration(field->type, field->name);
-            m_writer.Write(";");
-            m_writer.EndLine();
-            field = (HLSLDeclaration*)field->nextStatement;
-        }
-        m_writer.WriteLine(indent, "};");
-    }
+    m_writer.WriteLine(indent, "};");
+
+    int registerIndex = MapRegisterNameToIndex(buffer->registerName);
+    m_writer.WriteLine(indent, "layout (binding = %d, std140) uniform %s%s {", registerIndex, m_options.constantBufferPrefix, buffer->name);
+    m_writer.WriteLine(indent + 1, "%sType %s;", buffer->name, buffer->name);
+    m_writer.WriteLine(indent, "};");
 }
 
 inline void alignForWrite(unsigned int& offset, unsigned int size)
@@ -1652,6 +1645,16 @@ const char* GLSLGenerator::GetAttribQualifier(AttributeModifier modifier)
     }
 }
 
+int GLSLGenerator::MapRegisterNameToIndex(const char* registerName) const
+{
+    if (strncmp(registerName, "ConstantBuffer", 14) == 0)
+        return atoi(registerName + 14);
+    else
+        Error("Undefined register use %s", registerName);
+
+    return -1;
+}
+
 void GLSLGenerator::OutputAttribute(const HLSLType& type, const char* semantic, AttributeModifier modifier)
 {
     const char* qualifier = GetAttribQualifier(modifier);
@@ -1943,7 +1946,7 @@ void GLSLGenerator::OutputCast(const HLSLType& type)
         OutputDeclaration(type, "");
 }
 
-void GLSLGenerator::Error(const char* format, ...)
+void GLSLGenerator::Error(const char* format, ...) const
 {
     // It's not always convenient to stop executing when an error occurs,
     // so just track once we've hit an error and stop reporting them until
