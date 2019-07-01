@@ -107,10 +107,24 @@ struct Intrinsic
     HLSLFunction    function;
     HLSLArgument    argument[4];
 };
-    
+
 Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2)
 {
     Intrinsic i(name, returnType, arg1, arg2);
+    i.argument[0].type.samplerType = returnType;
+    return i;
+}
+
+Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3)
+{
+    Intrinsic i(name, returnType, arg1, arg2, arg3);
+    i.argument[0].type.samplerType = returnType;
+    return i;
+}
+
+Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3, HLSLBaseType arg4)
+{
+    Intrinsic i(name, returnType, arg1, arg2, arg3, arg4);
     i.argument[0].type.samplerType = returnType;
     return i;
 }
@@ -441,7 +455,7 @@ struct BaseTypeDescription
         Intrinsic( name, HLSLBaseType_Half3,   HLSLBaseType_Half3,   HLSLBaseType_Half3,  HLSLBaseType_Half3 ),    \
         Intrinsic( name, HLSLBaseType_Half4,   HLSLBaseType_Half4,   HLSLBaseType_Half4,  HLSLBaseType_Half4 )
 
-#define SAMPLING_INTRINSIC_FUNCTION(name, sampler, arg1) \
+#define SAMPLING_INTRINSIC_FUNCTION_ARG1(name, sampler, arg1) \
         SamplerIntrinsic(name, HLSLBaseType_Float, sampler, arg1),   \
         SamplerIntrinsic(name, HLSLBaseType_Float2, sampler, arg1),   \
         SamplerIntrinsic(name, HLSLBaseType_Float3, sampler, arg1),   \
@@ -458,6 +472,42 @@ struct BaseTypeDescription
         SamplerIntrinsic(name, HLSLBaseType_Uint2, sampler, arg1), \
         SamplerIntrinsic(name, HLSLBaseType_Uint3, sampler, arg1), \
         SamplerIntrinsic(name, HLSLBaseType_Uint4, sampler, arg1)
+
+#define SAMPLING_INTRINSIC_FUNCTION_ARG2(name, sampler, arg1, arg2) \
+        SamplerIntrinsic(name, HLSLBaseType_Float, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Float2, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Float3, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Float4, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Half, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Half2, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Half3, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Half4, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Int, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Int2, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Int3, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Int4, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint2, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint3, sampler, arg1, arg2), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint4, sampler, arg1, arg2)
+
+#define SAMPLING_INTRINSIC_FUNCTION_ARG3(name, sampler, arg1, arg2, arg3) \
+        SamplerIntrinsic(name, HLSLBaseType_Float, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Float2, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Float3, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Float4, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Half, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Half2, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Half3, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Half4, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Int, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Int2, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Int3, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Int4, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint2, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint3, sampler, arg1, arg2, arg3), \
+        SamplerIntrinsic(name, HLSLBaseType_Uint4, sampler, arg1, arg2, arg3)
     
 const Intrinsic _intrinsic[] =
     {
@@ -590,15 +640,37 @@ const Intrinsic _intrinsic[] =
 		Intrinsic("asuint",    HLSLBaseType_Uint, HLSLBaseType_Float),
         Intrinsic("asfloat", HLSLBaseType_Float, HLSLBaseType_Uint),
 
-        SAMPLING_INTRINSIC_FUNCTION("tex2D", HLSLBaseType_Texture2D, HLSLBaseType_Float2),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture1D, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2D, HLSLBaseType_Float2),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture3D, HLSLBaseType_Float3),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture1DArray, HLSLBaseType_Float2),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2DArray, HLSLBaseType_Float3),
+        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2DMS, HLSLBaseType_Float),
+        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_TextureCube, HLSLBaseType_Float3),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_TextureCubeArray, HLSLBaseType_Float4),
+
+        SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture1D, HLSLBaseType_Float, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture3D, HLSLBaseType_Float3, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture1DArray, HLSLBaseType_Float2, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture2DArray, HLSLBaseType_Float3, HLSLBaseType_Float),
+        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSampleLod", HLSLBaseType_Texture2DMS, HLSLBaseType_Float),
+        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSampleLod", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_TextureCube, HLSLBaseType_Float3, HLSLBaseType_Float),
+        SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_TextureCubeArray, HLSLBaseType_Float4, HLSLBaseType_Float),
+
+        SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture1D, HLSLBaseType_Float, HLSLBaseType_Float, HLSLBaseType_Int),
+        SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Float, HLSLBaseType_Int2),
+        SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture3D, HLSLBaseType_Float3, HLSLBaseType_Float, HLSLBaseType_Int3),
+        SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture1DArray, HLSLBaseType_Float2, HLSLBaseType_Float, HLSLBaseType_Int2),
+        SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture2DArray, HLSLBaseType_Float3, HLSLBaseType_Float, HLSLBaseType_Int3),
+        //SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture2DMS, HLSLBaseType_Float2, HLSLBaseType_Float, HLSLBaseType_Int),
+        //SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Float2, HLSLBaseType_Float, HLSLBaseType_Int),
         
         Intrinsic("tex2Dproj", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float4),
 
-        SAMPLING_INTRINSIC_FUNCTION("tex2Dlod", HLSLBaseType_Texture2D, HLSLBaseType_Float4),
-        
-        Intrinsic("tex2Dlod",  HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float4, HLSLBaseType_Int2),   // With offset.
-
-        SAMPLING_INTRINSIC_FUNCTION("tex2Dbias", HLSLBaseType_Texture2D, HLSLBaseType_Float4),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("tex2Dbias", HLSLBaseType_Texture2D, HLSLBaseType_Float4),
         
         Intrinsic("tex2Dgrad", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float2),
         Intrinsic("tex2Dgather", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Int),
@@ -619,8 +691,6 @@ const Intrinsic _intrinsic[] =
         Intrinsic("tex3Dbias", HLSLBaseType_Float4, HLSLBaseType_Texture3D, HLSLBaseType_Float4),
         Intrinsic("tex3Dsize", HLSLBaseType_Int3, HLSLBaseType_Texture3D),
 
-        SAMPLING_INTRINSIC_FUNCTION("texCube", HLSLBaseType_TextureCube, HLSLBaseType_Float3),
-        SAMPLING_INTRINSIC_FUNCTION("texCubeLod", HLSLBaseType_TextureCube, HLSLBaseType_Float4),
         Intrinsic("texCubebias", HLSLBaseType_Float4, HLSLBaseType_TextureCube, HLSLBaseType_Float4),
         Intrinsic("texCubesize", HLSLBaseType_Int, HLSLBaseType_TextureCube),
 

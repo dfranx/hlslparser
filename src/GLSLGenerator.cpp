@@ -161,6 +161,32 @@ static const char* GetTypeName(const HLSLType& type)
     }
 }
 
+static int GetElementCount(HLSLBaseType type)
+{
+    if (type == HLSLBaseType_Float ||
+        type == HLSLBaseType_Half ||
+        type == HLSLBaseType_Int ||
+        type == HLSLBaseType_Uint)
+        return 1;
+    if (type == HLSLBaseType_Float2 ||
+        type == HLSLBaseType_Half2 ||
+        type == HLSLBaseType_Int2 ||
+        type == HLSLBaseType_Uint2)
+        return 2;
+    if (type == HLSLBaseType_Float3 ||
+        type == HLSLBaseType_Half3 ||
+        type == HLSLBaseType_Int3 ||
+        type == HLSLBaseType_Uint3)
+        return 3;
+    if (type == HLSLBaseType_Float4 ||
+        type == HLSLBaseType_Half4 ||
+        type == HLSLBaseType_Int4 ||
+        type == HLSLBaseType_Uint4)
+        return 4;
+
+    return 0;
+}
+
 static bool GetCanImplicitCast(const HLSLType& srcType, const HLSLType& dstType)
 {
     return srcType.baseType == dstType.baseType;
@@ -340,8 +366,15 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
         m_writer.WriteLine(0, "void %s(vec4  x) { if (any(lessThan(x, vec4(0.0, 0.0, 0.0, 0.0)))) %s;  }", m_clipFunction, discard);
     }
 
-    // Output the special function used to emulate tex2Dlod.
-    if (m_tree->NeedsFunction("tex2Dlod"))
+    if (m_tree->NeedsFunction("TextureSample"))
+    {
+        m_writer.WriteLine(0, "#define TextureSample1(sampler, uv) (TextureSample(sampler, uv).r)");
+        m_writer.WriteLine(0, "#define TextureSample2(sampler, uv) (TextureSample(sampler, uv).rg)");
+        m_writer.WriteLine(0, "#define TextureSample3(sampler, uv) (TextureSample(sampler, uv).rgb)");
+        m_writer.WriteLine(0, "#define TextureSample4(sampler, uv) (TextureSample(sampler, uv).rgba)");
+        m_writer.WriteLine(0, "#define TextureSample(sampler, uv) texture(sampler, uv)");
+    }
+    if (m_tree->NeedsFunction("TextureSampleLod"))
     {
         const char* function = "textureLod";
 
@@ -356,7 +389,11 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
             function = "texture2DLodEXT";
         }
 
-        m_writer.WriteLine(0, "vec4 %s(sampler2D samp, vec4 texCoord) { return %s(samp, texCoord.xy, texCoord.w);  }", m_tex2DlodFunction, function);
+        m_writer.WriteLine(0, "#define TextureSampleLod1(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).r)");
+        m_writer.WriteLine(0, "#define TextureSampleLod2(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rg)");
+        m_writer.WriteLine(0, "#define TextureSampleLod3(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rgb)");
+        m_writer.WriteLine(0, "#define TextureSampleLod4(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rgba)");
+        m_writer.WriteLine(0, "#define TextureSampleLod(sampler, uv, lod) (%s(sampler, uv, lod).r)", function);
     }
 
     // Output the special function used to emulate tex2Dgrad.
@@ -398,12 +435,6 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
         m_writer.WriteLine(0, "vec4 tex2DMSfetch(sampler2DMS samp, ivec2 texCoord, int sample) {");
         m_writer.WriteLine(1, "return texelFetch(samp, texCoord, sample);");
         m_writer.WriteLine(0, "}");
-    }
-
-    // Output the special function used to emulate tex3Dlod.
-    if (m_tree->NeedsFunction("tex3Dlod"))
-    {
-        m_writer.WriteLine(0, "vec4 %s(sampler3D samp, vec4 texCoord) { return %s(samp, texCoord.xyz, texCoord.w);  }", m_tex3DlodFunction, m_versionLegacy ? "texture3D" : "texture" );
     }
 
     // Output the special function used to emulate texCUBEbias.
@@ -908,7 +939,7 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
 
         if (!handled)
         {
-            OutputIdentifier(functionName);
+            OutputIdentifier(expression);
             m_writer.Write("(");
             OutputExpressionList(functionCall->argument, functionCall->function->argument);
             m_writer.Write(")");
@@ -940,96 +971,91 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
 
 }
 
-void GLSLGenerator::OutputIdentifier(const char* name)
+void GLSLGenerator::OutputIdentifier(const HLSLExpression* expression)
 {
+    const char* name = NULL;
+    if (expression->nodeType == HLSLNodeType_FunctionCall)
+    {
+        const HLSLFunctionCall* functionCall = static_cast<const HLSLFunctionCall*>(expression);
+        name = functionCall->function->name;
 
-    // Remap intrinstic functions.
-    if (String_Equal(name, "tex2D"))
-    {
-        name = m_versionLegacy ? "texture2D" : "texture";
+        // Remap intrinstic functions.
+        if (String_Equal(name, "TextureSample"))
+        {
+            if (functionCall->argument && IsReadTextureType(functionCall->argument->expressionType))
+            {
+                int elemCount = GetElementCount(functionCall->argument->expressionType.samplerType);
+                m_writer.Write("TextureSample%d", elemCount);
+                return;
+            }
+        }
+        else if (String_Equal(name, "tex2Dproj"))
+        {
+            name = m_versionLegacy ? "texture2DProj" : "textureProj";
+        }
+        else if (String_Equal(name, "clip"))
+        {
+            name = m_clipFunction;
+        }
+        else if (String_Equal(name, "tex2Dbias"))
+        {
+            name = m_tex2DbiasFunction;
+        }
+        else if (String_Equal(name, "tex2Dgrad"))
+        {
+            name = m_tex2DgradFunction;
+        }
+        else if (String_Equal(name, "tex2DArray"))
+        {
+            name = "texture";
+        }
+        else if (String_Equal(name, "texCUBEbias"))
+        {
+            name = m_texCUBEbiasFunction;
+        }
+        else if (String_Equal(name, "atan2"))
+        {
+            name = "atan";
+        }
+        else if (String_Equal(name, "sincos"))
+        {
+            name = m_sinCosFunction;
+        }
+        else if (String_Equal(name, "fmod"))
+        {
+            // mod is not the same as fmod if the parameter is negative!
+            // The equivalent of fmod(x, y) is x - y * floor(x/y)
+            // We use the mod version for performance.
+            name = "mod";
+        }
+        else if (String_Equal(name, "lerp"))
+        {
+            name = "mix";
+        }
+        else if (String_Equal(name, "frac"))
+        {
+            name = "fract";
+        }
+        else if (String_Equal(name, "ddx"))
+        {
+            name = "dFdx";
+        }
+        else if (String_Equal(name, "ddy"))
+        {
+            name = "dFdy";
+        }
+        else if (String_Equal(name, "rsqrt"))
+        {
+            name = "inversesqrt";
+        }
     }
-    else if (String_Equal(name, "tex2Dproj"))
+    else if(expression->nodeType == HLSLNodeType_IdentifierExpression)
     {
-        name = m_versionLegacy ? "texture2DProj" : "textureProj";
-    }
-    else if (String_Equal(name, "texCUBE"))
-    {
-        name = m_versionLegacy ? "textureCube" : "texture";
-    }
-    else if (String_Equal(name, "tex3D"))
-    {
-        name = m_versionLegacy ? "texture3D" : "texture";
-    }
-    else if (String_Equal(name, "clip"))
-    {
-        name = m_clipFunction;
-    }
-    else if (String_Equal(name, "tex2Dlod"))
-    {
-        name = m_tex2DlodFunction;
-    }
-    else if (String_Equal(name, "tex2Dbias"))
-    {
-        name = m_tex2DbiasFunction;
-    }
-    else if (String_Equal(name, "tex2Dgrad"))
-    {
-        name = m_tex2DgradFunction;
-    }
-    else if (String_Equal(name, "tex2DArray"))
-    {
-        name = "texture";
-    }
-    else if (String_Equal(name, "texCUBEbias"))
-    {
-        name = m_texCUBEbiasFunction;
-    }
-	else if( String_Equal( name, "texCUBElod" ) )
-	{
-		name = m_texCUBElodFunction;
-	}
-    else if (String_Equal(name, "atan2"))
-    {
-        name = "atan";
-    }
-    else if (String_Equal(name, "sincos"))
-    {
-        name = m_sinCosFunction;
-    }
-    else if (String_Equal(name, "fmod"))
-    {
-        // mod is not the same as fmod if the parameter is negative!
-        // The equivalent of fmod(x, y) is x - y * floor(x/y)
-        // We use the mod version for performance.
-        name = "mod";
-    }
-    else if (String_Equal(name, "lerp"))
-    {
-        name = "mix";
-    }
-    else if (String_Equal(name, "frac"))
-    {
-        name = "fract";
-    }
-    else if (String_Equal(name, "ddx"))
-    {
-        name = "dFdx";
-    }
-    else if (String_Equal(name, "ddy"))
-    {
-        name = "dFdy";
-    }
-    else if (String_Equal(name, "rsqrt"))
-    {
-        name = "inversesqrt";
-    }
-    else 
-    {
+        const HLSLIdentifierExpression* identifier = static_cast<const HLSLIdentifierExpression*>(expression);
         // The identifier could be a GLSL reserved word (if it's not also a HLSL reserved word).
-        name = GetSafeIdentifierName(name);
+        name = GetSafeIdentifierName(identifier->name);
     }
     m_writer.Write("%s", name);
-
 }
 
 void GLSLGenerator::OutputArguments(HLSLArgument* argument)
