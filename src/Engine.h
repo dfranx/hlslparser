@@ -149,13 +149,13 @@ private:
         if (new_capacity == 0) {
             // free the buffer.
             if (buffer != NULL) {
-                allocator->Delete(allocator->m_userData, buffer);
+                allocator->Delete(allocator->m_userData, (void*)buffer);
                 buffer = NULL;
             }
         }
         else {
             // realloc the buffer
-            buffer = (T*)allocator->Realloc(allocator->m_userData, buffer, sizeof(T), new_capacity);
+            buffer = (T*)allocator->Realloc(allocator->m_userData, (void*)buffer, sizeof(T), new_capacity);
         }
 
         capacity = new_capacity;
