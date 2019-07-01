@@ -515,7 +515,8 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
             Error("Fragment shader must output a color");
 
         if (!m_versionLegacy)
-            m_writer.WriteLine(0, "out vec4 rast_FragData[%d];", m_outputTargets);
+            for(int  i = 0; i < m_outputTargets; ++i)
+            m_writer.WriteLine(0, "layout (location = %d) out vec4 renderTarget%d;", i, i);
     }
 
     OutputStatements(0, statement);
@@ -1770,7 +1771,7 @@ void GLSLGenerator::OutputSetOutAttribute(const char* semantic, const char* resu
         }
         else if (outputIndex >= 0)
         {
-            m_writer.WriteLine(1, "%s[%d] = %s;", builtInSemantic, outputIndex, resultName);
+            m_writer.WriteLine(1, "%s%d = %s;", builtInSemantic, outputIndex, resultName);
         }
         else
         {
@@ -2054,7 +2055,7 @@ const char* GLSLGenerator::GetBuiltInSemantic(const char* semantic, AttributeMod
             if (outputIndex)
                 *outputIndex = index;
 
-            return m_versionLegacy ? "gl_FragData" : "rast_FragData";
+            return m_versionLegacy ? "gl_FragData" : "renderTarget";
         }
     }
 
