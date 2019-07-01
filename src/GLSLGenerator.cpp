@@ -2020,14 +2020,14 @@ const char* GLSLGenerator::GetBuiltInSemantic(const char* semantic, AttributeMod
     if (outputIndex)
         *outputIndex = -1;
 
-    if (m_target == Target_VertexShader && modifier == AttributeModifier_Out && String_Equal(semantic, "POSITION"))
-        return "gl_Position";
+    if (m_target == Target_ComputeShader && modifier == AttributeModifier_In && String_Equal(semantic, "SV_DispatchThreadID"))
+        return "gl_GlobalInvocationID";
 
     if (m_target == Target_VertexShader && modifier == AttributeModifier_Out && String_Equal(semantic, "SV_Position"))
         return "gl_Position";
 
-    if (m_target == Target_VertexShader && modifier == AttributeModifier_Out && String_Equal(semantic, "PSIZE"))
-        return "gl_PointSize";
+    if (m_target == Target_VertexShader && modifier == AttributeModifier_In && String_Equal(semantic, "SV_VertexID"))
+        return "gl_VertexID";
 
     if (m_target == Target_VertexShader && modifier == AttributeModifier_In && String_Equal(semantic, "SV_InstanceID"))
         return "gl_InstanceID";
