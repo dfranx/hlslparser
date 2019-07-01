@@ -599,16 +599,9 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
         m_writer.Write("(");
     }
 
-    HLSLBuffer* bufferAccess = (m_options.flags & Flag_EmulateConstantBuffer) ? GetBufferAccessExpression(expression) : 0;
-
-    if (bufferAccess)
+    if (expression->nodeType == HLSLNodeType_IdentifierExpression)
     {
-        OutputBufferAccessExpression(bufferAccess, expression, expression->expressionType, 0);
-    }
-    else if (expression->nodeType == HLSLNodeType_IdentifierExpression)
-    {
-        HLSLIdentifierExpression* identifierExpression = static_cast<HLSLIdentifierExpression*>(expression);
-        OutputIdentifier(identifierExpression->name);
+        OutputIdentifier(expression);
     }
     else if (expression->nodeType == HLSLNodeType_ConstructorExpression)
     {

@@ -71,7 +71,7 @@ private:
 
     void OutputExpressionList(HLSLExpression* expression, HLSLArgument* argument = NULL);
     void OutputExpression(HLSLExpression* expression, const HLSLType* dstType = NULL);
-    void OutputIdentifier(const char* name);
+    void OutputIdentifier(const HLSLExpression* expression);
     void OutputArguments(HLSLArgument* argument);
     
     /**
