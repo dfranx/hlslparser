@@ -1521,12 +1521,6 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                 return true;
             }
 
-            // Optional semantic.
-            if (Accept(':') && !ExpectIdentifier(function->semantic))
-            {
-                return false;
-            }
-
             if (declaration)
             {
                 if (declaration->forward || declaration->statement)
@@ -1575,10 +1569,15 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
             }
 
             // Handle optional register.
-            if (Accept(':'))
+            if (IsReadTextureType(type))
             {
-                // @@ Currently we support either a semantic or a register, but not both.
-                if (!AcceptIdentifier(declaration->semantic)) 
+                if (!Expect(':'))
+                {
+                    m_tokenizer.Error("Syntax error! Expected input register for texture declaration");
+                    return false;
+                }
+
+                if (!AcceptIdentifier(declaration->registerName))
                 {
                     return false;
                 }

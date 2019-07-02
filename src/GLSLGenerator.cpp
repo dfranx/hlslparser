@@ -421,9 +421,6 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
 
     if (m_target == Target_FragmentShader)
     {
-        if (!m_outputTargets)
-            Error("Fragment shader must output a color");
-
         if (!m_versionLegacy)
             for(int  i = 0; i < m_outputTargets; ++i)
             m_writer.WriteLine(0, "layout (location = %d) out vec4 renderTarget%d;", i, i);
