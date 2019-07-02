@@ -634,8 +634,6 @@ const Intrinsic _intrinsic[] =
         SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture3D, HLSLBaseType_Float3),
         SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture1DArray, HLSLBaseType_Float2),
         SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2DArray, HLSLBaseType_Float3),
-        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2DMS, HLSLBaseType_Float),
-        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Float),
         SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_TextureCube, HLSLBaseType_Float3),
         SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_TextureCubeArray, HLSLBaseType_Float4),
 
@@ -644,8 +642,6 @@ const Intrinsic _intrinsic[] =
         SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture3D, HLSLBaseType_Float3, HLSLBaseType_Float),
         SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture1DArray, HLSLBaseType_Float2, HLSLBaseType_Float),
         SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_Texture2DArray, HLSLBaseType_Float3, HLSLBaseType_Float),
-        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSampleLod", HLSLBaseType_Texture2DMS, HLSLBaseType_Float),
-        //SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSampleLod", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Float),
         SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_TextureCube, HLSLBaseType_Float3, HLSLBaseType_Float),
         SAMPLING_INTRINSIC_FUNCTION_ARG2("TextureSampleLod", HLSLBaseType_TextureCubeArray, HLSLBaseType_Float4, HLSLBaseType_Float),
 
@@ -654,8 +650,6 @@ const Intrinsic _intrinsic[] =
         SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture3D, HLSLBaseType_Float3, HLSLBaseType_Float, HLSLBaseType_Int3),
         SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture1DArray, HLSLBaseType_Float2, HLSLBaseType_Float, HLSLBaseType_Int2),
         SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture2DArray, HLSLBaseType_Float3, HLSLBaseType_Float, HLSLBaseType_Int3),
-        //SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture2DMS, HLSLBaseType_Float2, HLSLBaseType_Float, HLSLBaseType_Int),
-        //SAMPLING_INTRINSIC_FUNCTION_ARG3("TextureSampleLodOffset", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Float2, HLSLBaseType_Float, HLSLBaseType_Int),
         
         SAMPLING_INTRINSIC_FUNCTION_COMP_ARG2(4, "TextureGather", HLSLBaseType_Texture2D, HLSLBaseType_Float2, HLSLBaseType_Int),
         SAMPLING_INTRINSIC_FUNCTION_COMP_ARG2(4, "TextureGather", HLSLBaseType_Texture2DArray, HLSLBaseType_Float3, HLSLBaseType_Int),
