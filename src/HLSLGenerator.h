@@ -69,7 +69,6 @@ private:
     bool            m_isInsideBuffer;
 
     char            m_tex2DFunction[64];
-    char            m_tex2DProjFunction[64];
     char            m_tex2DLodFunction[64];
     char            m_tex2DBiasFunction[64];
     char            m_tex2DGradFunction[64];

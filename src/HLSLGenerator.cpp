@@ -97,7 +97,6 @@ HLSLGenerator::HLSLGenerator(Logger* logger)
     m_target                        = Target_VertexShader;
     m_isInsideBuffer                = false;
     m_tex2DFunction[0]              = 0;
-    m_tex2DProjFunction[0]          = 0;
     m_tex2DLodFunction[0]           = 0;
     m_tex2DBiasFunction[0]          = 0;
     m_tex2DGradFunction[0]          = 0;
@@ -247,10 +246,7 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
     }
 
     ChooseUniqueName("TextureSample",               m_tex2DFunction,            sizeof(m_tex2DFunction));
-    ChooseUniqueName("tex2Dproj",                   m_tex2DProjFunction,        sizeof(m_tex2DProjFunction));
     ChooseUniqueName("TextureSampleLod",            m_tex2DLodFunction,         sizeof(m_tex2DLodFunction));
-    ChooseUniqueName("tex2Dbias",                   m_tex2DBiasFunction,        sizeof(m_tex2DBiasFunction));
-    ChooseUniqueName("tex2Dgrad",                   m_tex2DGradFunction,        sizeof(m_tex2DGradFunction));
     ChooseUniqueName("tex2Dgather",                 m_tex2DGatherFunction,      sizeof(m_tex2DGatherFunction));
     ChooseUniqueName("tex2Dsize",                   m_tex2DSizeFunction,        sizeof(m_tex2DSizeFunction));
     ChooseUniqueName("tex2Dfetch",                  m_tex2DFetchFunction,       sizeof(m_tex2DFetchFunction));
@@ -268,28 +264,11 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
 
     if (!m_legacy)
     {        
-        /*if (m_tree->GetContainsString("tex2Dproj"))
-        {
-            m_writer.WriteLine(0, "float4 %s(%s t, float4 texCoord) {", m_tex2DProjFunction, m_textureSampler2DStruct);
-            m_writer.WriteLine(1, "return ts.t.Sample(ts.s, texCoord.xy / texCoord.w);");
-            m_writer.WriteLine(0, "}");
-        }
+        /*
         if (m_tree->GetContainsString("tex2Dlod"))
         {
             m_writer.WriteLine(0, "float4 %s(%s ts, float4 texCoord, int2 offset=0) {", m_tex2DLodFunction, m_textureSampler2DStruct);
             m_writer.WriteLine(1, "return ts.t.SampleLevel(ts.s, texCoord.xy, texCoord.w, offset);");
-            m_writer.WriteLine(0, "}");
-        }
-        if (m_tree->GetContainsString("tex2Dbias"))
-        {
-            m_writer.WriteLine(0, "float4 %s(%s ts, float4 texCoord) {", m_tex2DBiasFunction, m_textureSampler2DStruct);
-            m_writer.WriteLine(1, "return ts.t.SampleBias(ts.s, texCoord.xy, texCoord.w);");
-            m_writer.WriteLine(0, "}");
-        }
-        if (m_tree->GetContainsString("tex2Dgrad"))
-        {
-            m_writer.WriteLine(0, "float4 %s(%s ts, float2 texCoord, float2 ddx, float2 ddy) {", m_tex2DGradFunction, m_textureSampler2DStruct);
-            m_writer.WriteLine(1, "return ts.t.SampleGrad(ts.s, texCoord.xy, ddx, ddy);");
             m_writer.WriteLine(0, "}");
         }
         if (m_tree->GetContainsString("tex2Dgather"))
@@ -603,21 +582,9 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
             {
                 name = m_tex2DFunction;
             }
-            else if (String_Equal(name, "tex2Dproj"))
-            {
-                name = m_tex2DProjFunction;
-            }
             else if (String_Equal(name, "tex2Dlod"))
             {
                 name = m_tex2DLodFunction;
-            }
-            else if (String_Equal(name, "tex2Dbias"))
-            {
-                name = m_tex2DBiasFunction;
-            }
-            else if (String_Equal(name, "tex2Dgrad"))
-            {
-                name = m_tex2DGradFunction;
             }
             else if (String_Equal(name, "tex2Dgather"))
             {

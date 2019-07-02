@@ -145,12 +145,6 @@ private:
     char                m_matrixCtorFunction[64];
     char                m_matrixMulFunction[64];
     char                m_clipFunction[64];
-    char                m_tex2DlodFunction[64];
-    char                m_tex2DbiasFunction[64];
-    char                m_tex2DgradFunction[64];
-    char                m_tex3DlodFunction[64];
-    char                m_texCUBEbiasFunction[64];
-	char                m_texCUBElodFunction[ 64 ];
     char                m_scalarSwizzle2Function[64];
     char                m_scalarSwizzle3Function[64];
     char                m_scalarSwizzle4Function[64];

@@ -224,11 +224,6 @@ GLSLGenerator::GLSLGenerator(Logger* logger) :
     m_matrixCtorFunction[0]     = 0;
     m_matrixMulFunction[0]      = 0;
     m_clipFunction[0]           = 0;
-    m_tex2DlodFunction[0]       = 0;
-    m_tex2DbiasFunction[0]      = 0;
-    m_tex3DlodFunction[0]       = 0;
-    m_texCUBEbiasFunction[0]    = 0;
-	m_texCUBElodFunction[ 0 ] 	= 0;
     m_scalarSwizzle2Function[0] = 0;
     m_scalarSwizzle3Function[0] = 0;
     m_scalarSwizzle4Function[0] = 0;
@@ -252,12 +247,6 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
     ChooseUniqueName("matrix_ctor", m_matrixCtorFunction, sizeof(m_matrixCtorFunction));
     ChooseUniqueName("matrix_mul", m_matrixMulFunction, sizeof(m_matrixMulFunction));
     ChooseUniqueName("clip", m_clipFunction, sizeof(m_clipFunction));
-    ChooseUniqueName("tex2Dlod", m_tex2DlodFunction, sizeof(m_tex2DlodFunction));
-    ChooseUniqueName("tex2Dbias", m_tex2DbiasFunction, sizeof(m_tex2DbiasFunction));
-    ChooseUniqueName("tex2Dgrad", m_tex2DgradFunction, sizeof(m_tex2DgradFunction));
-    ChooseUniqueName("tex3Dlod", m_tex3DlodFunction, sizeof(m_tex3DlodFunction));
-    ChooseUniqueName("texCUBEbias", m_texCUBEbiasFunction, sizeof(m_texCUBEbiasFunction));
-	ChooseUniqueName( "texCUBElod", m_texCUBElodFunction, sizeof( m_texCUBElodFunction ) );
 
     for (int i = 0; i < s_numReservedWords; ++i)
     {
@@ -376,99 +365,20 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
     }
     if (m_tree->NeedsFunction("TextureSampleLod"))
     {
-        const char* function = "textureLod";
-
-        if (m_version == Version_110)
-        {
-            m_writer.WriteLine(0, "#extension GL_ARB_shader_texture_lod : require");
-            function = "texture2DLod";
-        }
-        else if (m_version == Version_100_ES)
-        {
-            m_writer.WriteLine(0, "#extension GL_EXT_shader_texture_lod : require");
-            function = "texture2DLodEXT";
-        }
-
         m_writer.WriteLine(0, "#define TextureSampleLod1(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).r)");
         m_writer.WriteLine(0, "#define TextureSampleLod2(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rg)");
         m_writer.WriteLine(0, "#define TextureSampleLod3(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rgb)");
         m_writer.WriteLine(0, "#define TextureSampleLod4(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rgba)");
-        m_writer.WriteLine(0, "#define TextureSampleLod(sampler, uv, lod) (%s(sampler, uv, lod).r)", function);
+        m_writer.WriteLine(0, "#define TextureSampleLod(sampler, uv, lod) (textureLod(sampler, uv, lod).r)");
     }
-
-    // Output the special function used to emulate tex2Dgrad.
-    if (m_tree->NeedsFunction("tex2Dgrad"))
+    if (m_tree->NeedsFunction("TextureSampleLodOffset"))
     {
-        const char* function = "textureGrad";
-
-        if (m_version == Version_110)
-        {
-            m_writer.WriteLine(0, "#extension GL_ARB_shader_texture_lod : require");
-            function = "texture2DGradARB";
-        }
-        else if (m_version == Version_100_ES)
-        {
-            m_writer.WriteLine(0, "#extension GL_EXT_shader_texture_lod : require");
-            function = "texture2DGradEXT";
-        }
-
-        m_writer.WriteLine(0, "vec4 %s(sampler2D samp, vec2 texCoord, vec2 dx, vec2 dy) { return %s(samp, texCoord, dx, dy);  }", m_tex2DgradFunction, function);
+        m_writer.WriteLine(0, "#define TextureSampleLodOffset1(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).r)");
+        m_writer.WriteLine(0, "#define TextureSampleLodOffset2(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).rg)");
+        m_writer.WriteLine(0, "#define TextureSampleLodOffset3(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).rgb)");
+        m_writer.WriteLine(0, "#define TextureSampleLodOffset4(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).rgba)");
+        m_writer.WriteLine(0, "#define TextureSampleLodOffset(sampler, uv, lod, offset) (textureLodOffset(sampler, uv, lod, offset).r)");
     }
-
-    // Output the special function used to emulate tex2Dbias.
-    if (m_tree->NeedsFunction("tex2Dbias"))
-    {
-        if (target == Target_FragmentShader)
-        {
-            m_writer.WriteLine(0, "vec4 %s(sampler2D samp, vec4 texCoord) { return %s(samp, texCoord.xy, texCoord.w);  }", m_tex2DbiasFunction, m_versionLegacy ? "texture2D" : "texture" );
-        }
-        else
-        {
-            // Bias value is not supported in vertex shader.
-            m_writer.WriteLine(0, "vec4 %s(sampler2D samp, vec4 texCoord) { return texture(samp, texCoord.xy);  }", m_tex2DbiasFunction );
-        }
-    }
-
-    // Output the special function used to emulate tex2DMSfetch.
-    if (m_tree->NeedsFunction("tex2DMSfetch"))
-    {
-        m_writer.WriteLine(0, "vec4 tex2DMSfetch(sampler2DMS samp, ivec2 texCoord, int sample) {");
-        m_writer.WriteLine(1, "return texelFetch(samp, texCoord, sample);");
-        m_writer.WriteLine(0, "}");
-    }
-
-    // Output the special function used to emulate texCUBEbias.
-    if (m_tree->NeedsFunction("texCUBEbias"))
-    {
-        if (target == Target_FragmentShader)
-        {
-            m_writer.WriteLine(0, "vec4 %s(samplerCube samp, vec4 texCoord) { return %s(samp, texCoord.xyz, texCoord.w);  }", m_texCUBEbiasFunction, m_versionLegacy ? "textureCube" : "texture" );
-        }
-        else
-        {
-            // Bias value is not supported in vertex shader.
-            m_writer.WriteLine(0, "vec4 %s(samplerCube samp, vec4 texCoord) { return texture(samp, texCoord.xyz);  }", m_texCUBEbiasFunction );
-        }
-    }
-
-	// Output the special function used to emulate texCUBElod
-	if (m_tree->NeedsFunction("texCUBElod"))
-	{
-        const char* function = "textureLod";
-
-        if (m_version == Version_110)
-        {
-            m_writer.WriteLine(0, "#extension GL_ARB_shader_texture_lod : require");
-            function = "textureCubeLod";
-        }
-        else if (m_version == Version_100_ES)
-        {
-            m_writer.WriteLine(0, "#extension GL_EXT_shader_texture_lod : require");
-            function = "textureCubeLodEXT";
-        }
-
-		m_writer.WriteLine( 0, "vec4 %s(samplerCube samp, vec4 texCoord) { return %s(samp, texCoord.xyz, texCoord.w);  }", m_texCUBElodFunction, function);
-	}
 
     m_writer.WriteLine(0, "vec2  %s(float x) { return  vec2(x, x); }", m_scalarSwizzle2Function);
     m_writer.WriteLine(0, "ivec2 %s(int   x) { return ivec2(x, x); }", m_scalarSwizzle2Function);
@@ -983,29 +893,21 @@ void GLSLGenerator::OutputIdentifier(const HLSLExpression* expression)
                 return;
             }
         }
-        else if (String_Equal(name, "tex2Dproj"))
+        else if (String_Equal(name, "TextureGather"))
         {
-            name = m_versionLegacy ? "texture2DProj" : "textureProj";
+            name = "textureGather";
+        }
+        else if (String_Equal(name, "TextureFetch"))
+        {
+            name = "texelFetch";
+        }
+        else if (m_tree->NeedsFunction("TextureSize"))
+        {
+            name = "textureSize";
         }
         else if (String_Equal(name, "clip"))
         {
             name = m_clipFunction;
-        }
-        else if (String_Equal(name, "tex2Dbias"))
-        {
-            name = m_tex2DbiasFunction;
-        }
-        else if (String_Equal(name, "tex2Dgrad"))
-        {
-            name = m_tex2DgradFunction;
-        }
-        else if (String_Equal(name, "tex2DArray"))
-        {
-            name = "texture";
-        }
-        else if (String_Equal(name, "texCUBEbias"))
-        {
-            name = m_texCUBEbiasFunction;
         }
         else if (String_Equal(name, "atan2"))
         {
