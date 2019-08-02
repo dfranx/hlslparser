@@ -118,15 +118,71 @@ enum HLSLBaseType
     HLSLBaseType_Texture1DArray,
     HLSLBaseType_Texture2DArray,
     HLSLBaseType_Texture2DMSArray,
+    HLSLBaseType_RWTexture1D,
+    HLSLBaseType_RWTexture2D,
+    HLSLBaseType_RWTexture3D,
     HLSLBaseType_UserDefined,       // struct
     HLSLBaseType_Buffer, // ConstantBuffer, TextureBuffer
     HLSLBaseType_Expression,        // type argument for defined() sizeof() and typeof().
     HLSLBaseType_Auto,
     
-    HLSLBaseType_Count,
+    HLSLBaseType_Count, //check references when this enum is changed!
     HLSLBaseType_NumericCount = HLSLBaseType_LastNumeric - HLSLBaseType_FirstNumeric + 1
 };
-    
+
+enum HLSLImageFormat
+{
+    FirstImageFormat = 0,
+    FirstFloatFormat = FirstImageFormat,
+    RGBA32F = FirstFloatFormat,
+    RGBA16F,
+    RG32F,
+    RG16F,
+    R11G11B10F,
+    R32F,
+    R16F,
+    RGBA16Un,
+    RGB10A2Un,
+    RGBA8Un,
+    RG16Un,
+    RG8Un,
+    R16Un,
+    R8Un,
+    RGBA16Sn,
+    RGBA8Sn,
+    RG16Sn,
+    RG8Sn,
+    R16Sn,
+    R8Sn,
+    LastFloatFormat = R8Sn,
+
+    FirstIntFormat,
+    RGBA32I = FirstIntFormat,
+    RGBA16I,
+    RGBA8I,
+    RG32I,
+    RG16I,
+    RG8I,
+    R32I,
+    R16I,
+    R8I,
+    LastIntFormat = R8I,
+
+    FirstUintFormat,
+    RGBA32UI = FirstUintFormat,
+    RGBA16UI,
+    RGB10A2UI,
+    RGBA8UI,
+    RG32UI,
+    RG16UI,
+    RG8UI,
+    R32UI,
+    R16UI,
+    R8UI,
+    LastUintFormat = R8UI,
+    LastImageFormat = LastUintFormat
+};
+
 extern const HLSLTypeDimension BaseTypeDimension[HLSLBaseType_Count];
 extern const HLSLBaseType ScalarBaseType[HLSLBaseType_Count];
 
@@ -140,6 +196,13 @@ inline bool IsReadTextureType(HLSLBaseType baseType)
            baseType == HLSLBaseType_Texture1DArray ||
            baseType == HLSLBaseType_Texture2DArray ||
            baseType == HLSLBaseType_Texture2DMSArray;
+}
+
+inline bool IsWriteTextureType(HLSLBaseType baseType)
+{
+    return baseType == HLSLBaseType_RWTexture1D ||
+           baseType == HLSLBaseType_RWTexture2D ||
+           baseType == HLSLBaseType_RWTexture3D;
 }
 
 inline bool IsMatrixType(HLSLBaseType baseType)
@@ -336,6 +399,7 @@ struct HLSLType
     }
     HLSLBaseType        baseType;
     HLSLBaseType        samplerType;    // Half or Float
+    HLSLImageFormat     imageFormat;
     const char*         typeName;       // For user defined types.
     unsigned char       sampleCount;
     bool                array;
@@ -352,6 +416,11 @@ inline bool IsReadTextureType(const HLSLType& type)
 inline bool IsMultisampledTexture(const HLSLBaseType& type)
 {
     return type == HLSLBaseType_Texture2DMS || type == HLSLBaseType_Texture2DMSArray;
+}
+
+inline bool IsWriteTextureType(const HLSLType& type)
+{
+    return IsWriteTextureType(type.baseType);
 }
 
 inline bool IsScalarType(const HLSLType & type)

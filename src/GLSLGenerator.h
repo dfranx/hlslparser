@@ -72,6 +72,7 @@ private:
     void OutputExpressionList(HLSLExpression* expression, HLSLArgument* argument = NULL);
     void OutputExpression(HLSLExpression* expression, const HLSLType* dstType = NULL);
     void OutputIdentifier(const HLSLExpression* expression);
+    void OutputIdentifierPostfix(const HLSLExpression* expression);
     void OutputArguments(HLSLArgument* argument);
     
     /**
@@ -84,10 +85,11 @@ private:
     void OutputAttribute(const HLSLType& type, const char* semantic, AttributeModifier modifier);
     void OutputAttributes(HLSLFunction* entryFunction);
     void OutputEntryCaller(HLSLFunction* entryFunction);
-    void OutputDeclaration(HLSLDeclaration* declaration);
+    void OutputDeclaration(HLSLDeclaration* declaration, bool uniform);
 	void OutputDeclarationType( const HLSLType& type );
 	void OutputDeclarationBody( const HLSLType& type, const char* name );
     void OutputDeclaration(const HLSLType& type, const char* name);
+    void OutputQualifier(const char* registerName, const HLSLType& type);
     void OutputCast(const HLSLType& type);
 
     void OutputSetOutAttribute(const char* semantic, const char* resultName);

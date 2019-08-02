@@ -156,9 +156,80 @@ static const char* GetTypeName(const HLSLType& type)
         else if (IsUintVectorType(type.samplerType))
             return "usampler2DMSArray";
         return "?";
+    case HLSLBaseType_RWTexture1D:
+        if (IsFloatVectorType(type.samplerType))
+            return "image1D";
+        else if (IsIntVectorType(type.samplerType))
+            return "iimage1D";
+        else if (IsUintVectorType(type.samplerType))
+            return "uimage1D";
+        return "?";
+    case HLSLBaseType_RWTexture2D:
+        if (IsFloatVectorType(type.samplerType))
+            return "image2D";
+        else if (IsIntVectorType(type.samplerType))
+            return "iimage2D";
+        else if (IsUintVectorType(type.samplerType))
+            return "uimage2D";
+        return "?";
+    case HLSLBaseType_RWTexture3D:
+        if (IsFloatVectorType(type.samplerType))
+            return "image3D";
+        else if (IsIntVectorType(type.samplerType))
+            return "iimage3D";
+        else if (IsUintVectorType(type.samplerType))
+            return "uimage3D";
+        return "?";
     case HLSLBaseType_UserDefined:  return type.typeName;
     default: return "?";
     }
+}
+
+static const char* GetImageFormatQualifier(HLSLImageFormat format)
+{
+    switch (format)
+    {
+    case RGBA32F: return "rgba32f";
+    case RGBA16F: return "rgba16f";
+    case RG32F: return "rg32f";
+    case RG16F: return "rg16f";
+    case R11G11B10F: return "r11f_g11f_b10f";
+    case R32F: return "r32f";
+    case R16F: return "r16f";
+    case RGBA16Un: return "rgba16";
+    case RGB10A2Un: return "rgb10_a2";
+    case RGBA8Un: return "rgba8";
+    case RG16Un: return "rg16";
+    case RG8Un: return "rg8";
+    case R16Un: return "r16";
+    case R8Un: return "r8";
+    case RGBA16Sn: return "rgba16_snorm";
+    case RGBA8Sn: return "rgba8_snorm";
+    case RG16Sn: return "rg16_snorm";
+    case RG8Sn: return "rg8_snorm";
+    case R16Sn: return "r16_snorm";
+    case R8Sn: return "r8_snorm";
+    case RGBA32I: return "rgba32i";
+    case RGBA16I: return "rgba16i";
+    case RGBA8I: return "rgba8i";
+    case RG32I: return "rg32i";
+    case RG16I: return "rg16i";
+    case RG8I: return "rg8i";
+    case R32I: return "r32i";
+    case R16I: return "r16i";
+    case R8I: return "r8i";
+    case RGBA32UI: return "rgba32ui";
+    case RGBA16UI: return "rgba16ui";
+    case RGB10A2UI: return "rgb10_a2ui";
+    case RGBA8UI: return "rgba8ui";
+    case RG32UI: return "rg32ui";
+    case RG16UI: return "rg16ui";
+    case RG8UI: return "rg8ui";
+    case R32UI: return "r32ui";
+    case R16UI: return "r16ui";
+    case R8UI: return "r8ui";
+    }
+    return NULL;
 }
 
 static int GetElementCount(HLSLBaseType type)
@@ -353,31 +424,6 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
         m_writer.WriteLine(0, "void %s(vec2  x) { if (any(lessThan(x, vec2(0.0, 0.0)))) %s;  }", m_clipFunction, discard);
         m_writer.WriteLine(0, "void %s(vec3  x) { if (any(lessThan(x, vec3(0.0, 0.0, 0.0)))) %s;  }", m_clipFunction, discard);
         m_writer.WriteLine(0, "void %s(vec4  x) { if (any(lessThan(x, vec4(0.0, 0.0, 0.0, 0.0)))) %s;  }", m_clipFunction, discard);
-    }
-
-    if (m_tree->NeedsFunction("TextureSample"))
-    {
-        m_writer.WriteLine(0, "#define TextureSample1(sampler, uv) (TextureSample(sampler, uv).r)");
-        m_writer.WriteLine(0, "#define TextureSample2(sampler, uv) (TextureSample(sampler, uv).rg)");
-        m_writer.WriteLine(0, "#define TextureSample3(sampler, uv) (TextureSample(sampler, uv).rgb)");
-        m_writer.WriteLine(0, "#define TextureSample4(sampler, uv) (TextureSample(sampler, uv).rgba)");
-        m_writer.WriteLine(0, "#define TextureSample(sampler, uv) texture(sampler, uv)");
-    }
-    if (m_tree->NeedsFunction("TextureSampleLod"))
-    {
-        m_writer.WriteLine(0, "#define TextureSampleLod1(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).r)");
-        m_writer.WriteLine(0, "#define TextureSampleLod2(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rg)");
-        m_writer.WriteLine(0, "#define TextureSampleLod3(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rgb)");
-        m_writer.WriteLine(0, "#define TextureSampleLod4(sampler, uv, lod) (TextureSampleLod(sampler, uv, lod).rgba)");
-        m_writer.WriteLine(0, "#define TextureSampleLod(sampler, uv, lod) (textureLod(sampler, uv, lod).r)");
-    }
-    if (m_tree->NeedsFunction("TextureSampleLodOffset"))
-    {
-        m_writer.WriteLine(0, "#define TextureSampleLodOffset1(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).r)");
-        m_writer.WriteLine(0, "#define TextureSampleLodOffset2(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).rg)");
-        m_writer.WriteLine(0, "#define TextureSampleLodOffset3(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).rgb)");
-        m_writer.WriteLine(0, "#define TextureSampleLodOffset4(sampler, uv, lod, offset) (TextureSampleLodOffset(sampler, uv, lod, offset).rgba)");
-        m_writer.WriteLine(0, "#define TextureSampleLodOffset(sampler, uv, lod, offset) (textureLodOffset(sampler, uv, lod, offset).r)");
     }
 
     m_writer.WriteLine(0, "vec2  %s(float x) { return  vec2(x, x); }", m_scalarSwizzle2Function);
@@ -844,6 +890,7 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
             m_writer.Write("(");
             OutputExpressionList(functionCall->argument, functionCall->function->argument);
             m_writer.Write(")");
+            OutputIdentifierPostfix(expression);
         }
     }
     else
@@ -882,65 +929,60 @@ void GLSLGenerator::OutputIdentifier(const HLSLExpression* expression)
 
         // Remap intrinstic functions.
         if (String_Equal(name, "TextureSample"))
-        {
-            if (functionCall->argument && IsReadTextureType(functionCall->argument->expressionType))
-            {
-                int elemCount = GetElementCount(functionCall->argument->expressionType.samplerType);
-                m_writer.Write("TextureSample%d", elemCount);
-                return;
-            }
-        }
+            name = "(texture";
+        else if (String_Equal(name, "TextureSampleLod"))
+            name = "(textureLod";
+        else if (String_Equal(name, "TextureSampleLodOffset"))
+            name = "(textureLodOffset";
         else if (String_Equal(name, "TextureGather"))
-        {
             name = "textureGather";
-        }
         else if (String_Equal(name, "TextureFetch"))
-        {
             name = "texelFetch";
-        }
-        else if (m_tree->NeedsFunction("TextureSize"))
-        {
+        else if (String_Equal(name, "TextureSize"))
             name = "textureSize";
-        }
+        else if (String_Equal(name, "ImageLoad"))
+            name = "(imageLoad";
+        else if (String_Equal(name, "ImageStore"))
+            name = "imageStore";
+        else if (String_Equal(name, "ImageSize"))
+            name = "imageSize";
+        else if (String_Equal(name, "ImageAtomicExchange"))
+            name = "imageAtomicExchange";
+        else if (String_Equal(name, "ImageAtomicCompSwap"))
+            name = "imageAtomicCompSwap";
+        else if (String_Equal(name, "ImageAtomicAdd"))
+            name = "imageAtomicAdd";
+        else if (String_Equal(name, "ImageAtomicAnd"))
+            name = "imageAtomicAnd";
+        else if (String_Equal(name, "ImageAtomicOr"))
+            name = "imageAtomicOr";
+        else if (String_Equal(name, "ImageAtomicXor"))
+            name = "imageAtomicXor";
+        else if (String_Equal(name, "ImageAtomicMin"))
+            name = "imageAtomicMin";
+        else if (String_Equal(name, "ImageAtomicMax"))
+            name = "imageAtomicMax";
         else if (String_Equal(name, "clip"))
-        {
             name = m_clipFunction;
-        }
         else if (String_Equal(name, "atan2"))
-        {
             name = "atan";
-        }
         else if (String_Equal(name, "sincos"))
-        {
             name = m_sinCosFunction;
-        }
         else if (String_Equal(name, "fmod"))
-        {
             // mod is not the same as fmod if the parameter is negative!
             // The equivalent of fmod(x, y) is x - y * floor(x/y)
             // We use the mod version for performance.
             name = "mod";
-        }
         else if (String_Equal(name, "lerp"))
-        {
             name = "mix";
-        }
         else if (String_Equal(name, "frac"))
-        {
             name = "fract";
-        }
         else if (String_Equal(name, "ddx"))
-        {
             name = "dFdx";
-        }
         else if (String_Equal(name, "ddy"))
-        {
             name = "dFdy";
-        }
         else if (String_Equal(name, "rsqrt"))
-        {
             name = "inversesqrt";
-        }
     }
     else if(expression->nodeType == HLSLNodeType_IdentifierExpression)
     {
@@ -949,6 +991,38 @@ void GLSLGenerator::OutputIdentifier(const HLSLExpression* expression)
         name = GetSafeIdentifierName(identifier->name);
     }
     m_writer.Write("%s", name);
+}
+
+void GLSLGenerator::OutputIdentifierPostfix(const HLSLExpression* expression)
+{
+    const char* name = NULL;
+    const char* postfix = NULL;
+    if (expression->nodeType == HLSLNodeType_FunctionCall)
+    {
+        const HLSLFunctionCall* functionCall = static_cast<const HLSLFunctionCall*>(expression);
+        name = functionCall->function->name;
+        if (String_Equal(name, "TextureSample") || 
+            String_Equal(name, "TextureSampleLod") ||
+            String_Equal(name, "TextureSampleLodOffset") ||
+            String_Equal(name, "ImageLoad"))
+        {
+            if (functionCall->argument && (IsReadTextureType(functionCall->argument->expressionType) || IsWriteTextureType(functionCall->argument->expressionType)))
+            {
+                int elemCount = GetElementCount(functionCall->argument->expressionType.samplerType);
+                if (elemCount == 1)
+                    postfix = ".r";
+                else if (elemCount == 2)
+                    postfix = ".rg";
+                else if (elemCount == 3)
+                    postfix = ".rgb";
+                else
+                    postfix = "";
+            }
+        }
+    }
+
+    if(postfix != NULL)
+        m_writer.Write("%s)", postfix);
 }
 
 void GLSLGenerator::OutputArguments(HLSLArgument* argument)
@@ -999,13 +1073,13 @@ void GLSLGenerator::OutputStatements(int indent, HLSLStatement* statement, const
             HLSLDeclaration* declaration = static_cast<HLSLDeclaration*>(statement);
 
             m_writer.BeginLine(indent, declaration->fileName, declaration->line);
-            if (indent == 0)
-            {
-                // At the top level, we need the "uniform" keyword.
-                if ((declaration->type.flags & HLSLTypeFlag_Static) == 0)
-                        m_writer.Write("uniform ");
-            }
-            OutputDeclaration(declaration);
+            //if (indent == 0)
+            //{
+            //    // At the top level, we need the "uniform" keyword.
+            //    if ((declaration->type.flags & HLSLTypeFlag_Static) == 0)
+            //            m_writer.Write("uniform ");
+            //}
+            OutputDeclaration(declaration, indent == 0);
             m_writer.EndLine(";");
         }
         else if (statement->nodeType == HLSLNodeType_Struct)
@@ -1117,7 +1191,7 @@ void GLSLGenerator::OutputStatements(int indent, HLSLStatement* statement, const
             HLSLForStatement* forStatement = static_cast<HLSLForStatement*>(statement);
             m_writer.BeginLine(indent, forStatement->fileName, forStatement->line);
             m_writer.Write("for (");
-            OutputDeclaration(forStatement->initialization);
+            OutputDeclaration(forStatement->initialization, false);
             m_writer.Write("; ");
             OutputExpression(forStatement->condition, &kBoolType);
             m_writer.Write("; ");
@@ -1792,8 +1866,12 @@ void GLSLGenerator::OutputEntryCaller(HLSLFunction* entryFunction)
     m_writer.WriteLine(0, "}");
 }
 
-void GLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
+void GLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration, bool uniform)
 {
+    OutputQualifier(declaration->registerName, declaration->type);
+
+    if (uniform && (declaration->type.flags & HLSLTypeFlag_Static) == 0)
+        m_writer.Write("uniform ");
 	OutputDeclarationType( declaration->type );
 
 	HLSLDeclaration* lastDecl = nullptr;
@@ -1857,6 +1935,39 @@ void GLSLGenerator::OutputDeclarationBody( const HLSLType& type, const char* nam
 	}
 }
 
+void GLSLGenerator::OutputQualifier(const char* registerName, const HLSLType& type)
+{
+    int bindPoint = -1;
+    const char* imageQualifier = NULL;
+    const char* bindPointPrefix = NULL;
+
+    if (IsReadTextureType(type.baseType))
+    {
+        bindPointPrefix = "Texture";
+    }
+    else if (IsWriteTextureType(type.baseType))
+    {
+        imageQualifier = GetImageFormatQualifier(type.imageFormat);
+        bindPointPrefix = "RWTexture";
+    }
+
+    if (bindPointPrefix != NULL && registerName != NULL && strncmp(bindPointPrefix, registerName, strlen(bindPointPrefix)) == 0)
+        bindPoint = atoi(registerName + strlen(bindPointPrefix));
+
+    int qualifierCount = bindPoint != -1 ? 1 : 0;
+
+    if (qualifierCount > 0)
+    {
+        m_writer.Write("layout (");
+        if (bindPoint != -1)
+            m_writer.Write("binding = %d", bindPoint);
+        if (imageQualifier != NULL)
+            m_writer.Write(", %s", imageQualifier);
+
+        m_writer.Write(") ");
+    }
+}
+
 void GLSLGenerator::OutputCast(const HLSLType& type)
 {
     if (m_version == Version_110 && type.baseType == HLSLBaseType_Float3x3)
@@ -1911,6 +2022,9 @@ const char* GLSLGenerator::GetBuiltInSemantic(const char* semantic, AttributeMod
 {
     if (outputIndex)
         *outputIndex = -1;
+
+    if (semantic == NULL)
+        return NULL;
 
     if (m_target == Target_ComputeShader && modifier == AttributeModifier_In && String_Equal(semantic, "SV_DispatchThreadID"))
         return "gl_GlobalInvocationID";

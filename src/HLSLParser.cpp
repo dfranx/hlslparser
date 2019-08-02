@@ -28,277 +28,127 @@ enum CompareFunctionsResult
 };
 
 
-    /** This structure stores a HLSLFunction-like declaration for an intrinsic function */
-    struct Intrinsic
+/** This structure stores a HLSLFunction-like declaration for an intrinsic function */
+struct Intrinsic
+{
+    explicit Intrinsic(const char* name, HLSLBaseType returnType)
     {
-        explicit Intrinsic(const char* name, HLSLBaseType returnType)
-        {
-            function.name = name;
-            function.returnType.baseType = returnType;
-            function.numArguments = 0;
-        }
-        explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1)
-        {
-            function.name = name;
-            function.returnType.baseType = returnType;
-            function.numArguments = 1;
-            function.argument = argument + 0;
-            argument[0].type.baseType = arg1;
-            argument[0].type.flags = HLSLTypeFlag_Const;
-        }
-        explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2)
-        {
-            function.name = name;
-            function.returnType.baseType = returnType;
-            function.argument = argument + 0;
-            function.numArguments = 2;
-            argument[0].type.baseType = arg1;
-            argument[0].type.flags = HLSLTypeFlag_Const;
-            argument[0].nextArgument = argument + 1;
-            argument[1].type.baseType = arg2;
-            argument[1].type.flags = HLSLTypeFlag_Const;
-        }
-        explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3)
-        {
-            function.name = name;
-            function.returnType.baseType = returnType;
-            function.argument = argument + 0;
-            function.numArguments = 3;
-            argument[0].type.baseType = arg1;
-            argument[0].type.flags = HLSLTypeFlag_Const;
-            argument[0].nextArgument = argument + 1;
-            argument[1].type.baseType = arg2;
-            argument[1].type.flags = HLSLTypeFlag_Const;
-            argument[1].nextArgument = argument + 2;
-            argument[2].type.baseType = arg3;
-            argument[2].type.flags = HLSLTypeFlag_Const;
-        }
-        explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3, HLSLBaseType arg4)
-        {
-            function.name = name;
-            function.returnType.baseType = returnType;
-            function.argument = argument + 0;
-            function.numArguments = 4;
-            argument[0].type.baseType = arg1;
-            argument[0].type.flags = HLSLTypeFlag_Const;
-            argument[0].nextArgument = argument + 1;
-            argument[1].type.baseType = arg2;
-            argument[1].type.flags = HLSLTypeFlag_Const;
-            argument[1].nextArgument = argument + 2;
-            argument[2].type.baseType = arg3;
-            argument[2].type.flags = HLSLTypeFlag_Const;
-            argument[2].nextArgument = argument + 3;
-            argument[3].type.baseType = arg4;
-            argument[3].type.flags = HLSLTypeFlag_Const;
-        }
-        Intrinsic(const Intrinsic& intrinsic)
-        {
-            function = intrinsic.function;
-
-            HLSLArgument** arg = &function.argument;
-            function.argument = argument;
-
-            for (int i = 0; i < function.numArguments; ++i)
-            {
-                argument[i] = intrinsic.argument[i];
-                argument[i].nextArgument = argument + i + 1;
-            }
-        }
-        HLSLFunction    function;
-        HLSLArgument    argument[4];
-    };
-
-    Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1)
-    {
-        Intrinsic i(name, returnType, arg1);
-        i.argument[0].type.samplerType = returnType;
-        return i;
+        function.name = name;
+        function.returnType.baseType = returnType;
+        function.numArguments = 0;
     }
-
-    Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2)
+    explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1)
     {
-        Intrinsic i(name, returnType, arg1, arg2);
-        i.argument[0].type.samplerType = returnType;
-        return i;
+        function.name = name;
+        function.returnType.baseType = returnType;
+        function.numArguments = 1;
+        function.argument = argument + 0;
+        argument[0].type.baseType = arg1;
+        argument[0].type.flags = HLSLTypeFlag_Const;
     }
-
-    Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3)
+    explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2)
     {
-        Intrinsic i(name, returnType, arg1, arg2, arg3);
-        i.argument[0].type.samplerType = returnType;
-        return i;
+        function.name = name;
+        function.returnType.baseType = returnType;
+        function.argument = argument + 0;
+        function.numArguments = 2;
+        argument[0].type.baseType = arg1;
+        argument[0].type.flags = HLSLTypeFlag_Const;
+        argument[0].nextArgument = argument + 1;
+        argument[1].type.baseType = arg2;
+        argument[1].type.flags = HLSLTypeFlag_Const;
     }
-
-    Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3, HLSLBaseType arg4)
+    explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3)
     {
-        Intrinsic i(name, returnType, arg1, arg2, arg3, arg4);
-        i.argument[0].type.samplerType = returnType;
-        return i;
+        function.name = name;
+        function.returnType.baseType = returnType;
+        function.argument = argument + 0;
+        function.numArguments = 3;
+        argument[0].type.baseType = arg1;
+        argument[0].type.flags = HLSLTypeFlag_Const;
+        argument[0].nextArgument = argument + 1;
+        argument[1].type.baseType = arg2;
+        argument[1].type.flags = HLSLTypeFlag_Const;
+        argument[1].nextArgument = argument + 2;
+        argument[2].type.baseType = arg3;
+        argument[2].type.flags = HLSLTypeFlag_Const;
     }
-
-
-    enum NumericType
+    explicit Intrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3, HLSLBaseType arg4)
     {
-        NumericType_Float,
-        NumericType_Half,
-        NumericType_Bool,
-        NumericType_Int,
-        NumericType_Uint,
-        NumericType_Count,
-        NumericType_NaN,
-    };
-
-    static const int _numberTypeRank[NumericType_Count][NumericType_Count] =
+        function.name = name;
+        function.returnType.baseType = returnType;
+        function.argument = argument + 0;
+        function.numArguments = 4;
+        argument[0].type.baseType = arg1;
+        argument[0].type.flags = HLSLTypeFlag_Const;
+        argument[0].nextArgument = argument + 1;
+        argument[1].type.baseType = arg2;
+        argument[1].type.flags = HLSLTypeFlag_Const;
+        argument[1].nextArgument = argument + 2;
+        argument[2].type.baseType = arg3;
+        argument[2].type.flags = HLSLTypeFlag_Const;
+        argument[2].nextArgument = argument + 3;
+        argument[3].type.baseType = arg4;
+        argument[3].type.flags = HLSLTypeFlag_Const;
+    }
+    Intrinsic(const Intrinsic& intrinsic)
     {
-        //F  H  B  I  U    
-        { 0, 4, 4, 4, 4 },  // NumericType_Float
-        { 1, 0, 4, 4, 4 },  // NumericType_Half
-        { 5, 5, 0, 5, 5 },  // NumericType_Bool
-        { 5, 5, 4, 0, 3 },  // NumericType_Int
-        { 5, 5, 4, 2, 0 }   // NumericType_Uint
-    };
+        function = intrinsic.function;
 
+        HLSLArgument** arg = &function.argument;
+        function.argument = argument;
 
-    struct EffectStateValue
-    {
-        const char * name;
-        int value;
-    };
+        for (int i = 0; i < function.numArguments; ++i)
+        {
+            argument[i] = intrinsic.argument[i];
+            argument[i].nextArgument = argument + i + 1;
+        }
+    }
+    HLSLFunction    function;
+    HLSLArgument    argument[4];
+};
 
-    static const EffectStateValue textureFilteringValues[] = {
-        {"None", 0},
-        {"Point", 1},
-        {"Linear", 2},
-        {"Anisotropic", 3},
-        {NULL, 0}
-    };
+Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1)
+{
+    Intrinsic i(name, returnType, arg1);
+    i.argument[0].type.samplerType = returnType;
+    return i;
+}
 
-    static const EffectStateValue textureAddressingValues[] = {
-        {"Wrap", 1},
-        {"Mirror", 2},
-        {"Clamp", 3},
-        {"Border", 4},
-        {"MirrorOnce", 5},
-        {NULL, 0}
-    };
+Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2)
+{
+    Intrinsic i(name, returnType, arg1, arg2);
+    i.argument[0].type.samplerType = returnType;
+    return i;
+}
 
-    static const EffectStateValue booleanValues[] = {
-        {"False", 0},
-        {"True", 1},
-        {NULL, 0}
-    };
+Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3)
+{
+    Intrinsic i(name, returnType, arg1, arg2, arg3);
+    i.argument[0].type.samplerType = returnType;
+    return i;
+}
 
-    static const EffectStateValue cullValues[] = {
-        {"None", 1},
-        {"CW", 2},
-        {"CCW", 3},
-        {NULL, 0}
-    };
+Intrinsic SamplerIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType arg1, HLSLBaseType arg2, HLSLBaseType arg3, HLSLBaseType arg4)
+{
+    Intrinsic i(name, returnType, arg1, arg2, arg3, arg4);
+    i.argument[0].type.samplerType = returnType;
+    return i;
+}
 
-    static const EffectStateValue cmpValues[] = {
-        {"Never", 1},
-        {"Less", 2},
-        {"Equal", 3},
-        {"LessEqual", 4},
-        {"Greater", 5},
-        {"NotEqual", 6},
-        {"GreaterEqual", 7},
-        {"Always", 8},
-        {NULL, 0}
-    };
+Intrinsic ImageIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType imageType, HLSLBaseType imageComponentType, HLSLBaseType arg1, HLSLBaseType arg2)
+{
+    Intrinsic i(name, returnType, imageType, arg1, arg2);
+    i.argument[0].type.samplerType = imageComponentType;
+    return i;
+}
 
-    static const EffectStateValue blendValues[] = {
-        {"Zero", 1},
-        {"One", 2},
-        {"SrcColor", 3},
-        {"InvSrcColor", 4},
-        {"SrcAlpha", 5},
-        {"InvSrcAlpha", 6},
-        {"DestAlpha", 7},
-        {"InvDestAlpha", 8},
-        {"DestColor", 9},
-        {"InvDestColor", 10},
-        {"SrcAlphaSat", 11},
-        {"BothSrcAlpha", 12},
-        {"BothInvSrcAlpha", 13},
-        {"BlendFactor", 14},
-        {"InvBlendFactor", 15},
-        {"SrcColor2", 16},          // Dual source blending. D3D9Ex only.
-        {"InvSrcColor2", 17},
-        {NULL, 0}
-    };
-
-    static const EffectStateValue blendOpValues[] = {
-        {"Add", 1},
-        {"Subtract", 2},
-        {"RevSubtract", 3},
-        {"Min", 4},
-        {"Max", 5},
-        {NULL, 0}
-    };
-
-    static const EffectStateValue fillModeValues[] = {
-        {"Point", 1},
-        {"Wireframe", 2},
-        {"Solid", 3},
-        {NULL, 0}
-    };
-
-    static const EffectStateValue stencilOpValues[] = {
-        {"Keep", 1},
-        {"Zero", 2},
-        {"Replace", 3},
-        {"IncrSat", 4},
-        {"DecrSat", 5},
-        {"Invert", 6},
-        {"Incr", 7},
-        {"Decr", 8},
-        {NULL, 0}
-    };
-
-    // These are flags.
-    static const EffectStateValue colorMaskValues[] = {
-        {"False", 0},
-        {"Red",   1 << 0},
-        {"Green", 1 << 1},
-        {"Blue",  1 << 2},
-        {"Alpha", 1 << 3},
-        {"X", 1 << 0},
-        {"Y", 1 << 1},
-        {"Z", 1 << 2},
-        {"W", 1 << 3},
-        {NULL, 0}
-    };
-
-    static const EffectStateValue integerValues[] = {
-        {NULL, 0}
-    };
-
-    static const EffectStateValue floatValues[] = {
-        {NULL, 0}
-    };
-
-
-    struct EffectState
-    {
-        const char * name;
-        int d3drs;
-        const EffectStateValue * values;
-    };
-
-    static const EffectState samplerStates[] = {
-        {"AddressU", 1, textureAddressingValues},
-        {"AddressV", 2, textureAddressingValues},
-        {"AddressW", 3, textureAddressingValues},
-        // "BorderColor", 4, D3DCOLOR
-        {"MagFilter", 5, textureFilteringValues},
-        {"MinFilter", 6, textureFilteringValues},
-        {"MipFilter", 7, textureFilteringValues},
-        {"MipMapLodBias", 8, floatValues},
-        {"MaxMipLevel", 9, integerValues},
-        {"MaxAnisotropy", 10, integerValues},
-        {"sRGBTexture", 11, booleanValues},
-    };
+Intrinsic ImageIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType imageType, HLSLBaseType imageComponentType)
+{
+    Intrinsic i(name, returnType, imageType);
+    i.argument[0].type.samplerType = imageComponentType;
+    return i;
+}
 
     static const EffectState effectStates[] = {
         {"VertexShader", 0, NULL},
@@ -347,12 +197,59 @@ enum CompareFunctionsResult
         {"Front", 2},
         {NULL, 0}
     };
+struct HLSLImageFormatDescriptor
+{
+    NumericType numericType;
+    int dimensions;
+};
 
     static const EffectStateValue witnessFillModeValues[] = {
         {"Solid", 0},
         {"Wireframe", 1},
         {NULL, 0}
     };
+static const HLSLImageFormatDescriptor _imageFormatDescriptors[]
+{
+    { NumericType_Float, 4 }, // RGBA32F,
+    { NumericType_Float, 4 }, // RGBA16F,
+    { NumericType_Float, 2 }, // RG32F,
+    { NumericType_Float, 2 }, // RG16F,
+    { NumericType_Float, 3 }, // R11G11B10F,
+    { NumericType_Float, 1 }, // R32F,
+    { NumericType_Float, 1 }, // R16F,
+    { NumericType_Float, 4 }, // RGBA16Un,
+    { NumericType_Float, 4 }, // RGB10A2Un,
+    { NumericType_Float, 4 }, // RGBA8Un,
+    { NumericType_Float, 2 }, // RG16Un,
+    { NumericType_Float, 2 }, // RG8Un,
+    { NumericType_Float, 1 }, // R16Un,
+    { NumericType_Float, 1 }, // R8Un,
+    { NumericType_Float, 4 }, // RGBA16Sn,
+    { NumericType_Float, 4 }, // RGBA8Sn,
+    { NumericType_Float, 2 }, // RG16Sn,
+    { NumericType_Float, 2 }, // RG8Sn,
+    { NumericType_Float, 1 }, // R16Sn,
+    { NumericType_Float, 1 }, // R8Sn,
+    { NumericType_Int, 4 }, // RGBA32I,
+    { NumericType_Int, 4 }, // RGBA16I,
+    { NumericType_Int, 4 }, // RGBA8I,
+    { NumericType_Int, 2 }, // RG32I,
+    { NumericType_Int, 2 }, // RG16I,
+    { NumericType_Int, 2 }, // RG8I,
+    { NumericType_Int, 1 }, // R32I,
+    { NumericType_Int, 1 }, // R16I,
+    { NumericType_Int, 1 }, // R8I,
+    { NumericType_Uint, 4 }, // RGBA32UI,
+    { NumericType_Uint, 4 }, // RGBA16UI,
+    { NumericType_Uint, 4 }, // RGB10A2UI,
+    { NumericType_Uint, 4 }, // RGBA8UI,
+    { NumericType_Uint, 2 }, // RG32UI,
+    { NumericType_Uint, 2 }, // RG16UI,
+    { NumericType_Uint, 2 }, // RG8UI,
+    { NumericType_Uint, 1 }, // R32UI,
+    { NumericType_Uint, 1 }, // R16UI,
+    { NumericType_Uint, 1 }, // R8UI,
+};
 
     static const EffectStateValue witnessBlendModeValues[] = {
         {"Disabled", 0},
@@ -421,15 +318,15 @@ enum CompareFunctionsResult
 
 
 
-    struct BaseTypeDescription
-    {
-        const char*     typeName;
-        NumericType     numericType;
-        int             numComponents;
-        int             numDimensions;
-        int             height;
-        int             binaryOpRank;
-    };
+struct BaseTypeDescription
+{
+    const char*     typeName;
+    NumericType     numericType;
+    int             numComponents;
+    int             numDimensions;
+    int             height;
+    int             binaryOpRank;
+};
 
 
 #define INTRINSIC_FLOAT1_FUNCTION(name) \
@@ -497,7 +394,44 @@ enum CompareFunctionsResult
     SAMPLING_INTRINSIC_FUNCTION_COMP_ARG3(2, name, sampler, arg1, arg2, arg3), \
     SAMPLING_INTRINSIC_FUNCTION_COMP_ARG3(3, name, sampler, arg1, arg2, arg3), \
     SAMPLING_INTRINSIC_FUNCTION_COMP_ARG3(4, name, sampler, arg1, arg2, arg3)
-    
+
+#define IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1(name, image, arg1) \
+    SamplerIntrinsic(name, HLSLBaseType_Int, image, arg1, HLSLBaseType_Int), \
+    SamplerIntrinsic(name, HLSLBaseType_Uint, image, arg1, HLSLBaseType_Uint)
+
+#define IMAGE_INTRINSIC_SIZE(name, returnValue, image) \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Int), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Int), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Int2), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Int3), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Int4), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Uint), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Uint2), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Uint3), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Uint4), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Float), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Float2), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Float3), \
+    ImageIntrinsic(name, returnValue, image, HLSLBaseType_Float4)
+
+#define IMAGE_INTRINSIC_STORE(name, image, coord) \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Int, coord, HLSLBaseType_Int), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Int2, coord, HLSLBaseType_Int2), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Int3, coord, HLSLBaseType_Int3), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Int4, coord, HLSLBaseType_Int4), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Uint, coord, HLSLBaseType_Uint), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Uint2, coord, HLSLBaseType_Uint2), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Uint3, coord, HLSLBaseType_Uint3), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Uint4, coord, HLSLBaseType_Uint4), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Float, coord, HLSLBaseType_Float), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Float2, coord, HLSLBaseType_Float2), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Float3, coord, HLSLBaseType_Float3), \
+    ImageIntrinsic(name, HLSLBaseType_Void, image, HLSLBaseType_Float4, coord, HLSLBaseType_Float4) 
+
+#define IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG2(name, image, arg1) \
+    SamplerIntrinsic(name, HLSLBaseType_Int, image, arg1, HLSLBaseType_Int, HLSLBaseType_Int), \
+    SamplerIntrinsic(name, HLSLBaseType_Uint, image, arg1, HLSLBaseType_Uint, HLSLBaseType_Uint)
+
 const Intrinsic _intrinsic[] =
     {
         INTRINSIC_FLOAT1_FUNCTION( "abs" ),
@@ -664,15 +598,59 @@ const Intrinsic _intrinsic[] =
         SAMPLING_INTRINSIC_FUNCTION_COMP_ARG2(4, "TextureFetch", HLSLBaseType_Texture2DMS, HLSLBaseType_Int2, HLSLBaseType_Int),
         SAMPLING_INTRINSIC_FUNCTION_COMP_ARG2(4, "TextureFetch", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Int3, HLSLBaseType_Int),
             
-        SamplerIntrinsic("TextureSize", HLSLBaseType_Texture1D, HLSLBaseType_Int, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_Texture2D, HLSLBaseType_Int2, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_Texture3D, HLSLBaseType_Int3, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_TextureCube, HLSLBaseType_Int2, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_TextureCubeArray, HLSLBaseType_Int3, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_Texture1DArray, HLSLBaseType_Int2, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_Texture2DArray, HLSLBaseType_Int3, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_Texture2DMS, HLSLBaseType_Int2, HLSLBaseType_Int),
-        SamplerIntrinsic("TextureSize", HLSLBaseType_Texture2DMSArray, HLSLBaseType_Int3, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int, HLSLBaseType_Texture1D, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int2, HLSLBaseType_Texture2D, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int3, HLSLBaseType_Texture3D, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int2, HLSLBaseType_TextureCube, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int3, HLSLBaseType_TextureCubeArray, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int2, HLSLBaseType_Texture1DArray, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int3, HLSLBaseType_Texture2DArray, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int2, HLSLBaseType_Texture2DMS, HLSLBaseType_Int),
+        SamplerIntrinsic("TextureSize", HLSLBaseType_Int3, HLSLBaseType_Texture2DMSArray, HLSLBaseType_Int),
+
+        IMAGE_INTRINSIC_SIZE("ImageSize", HLSLBaseType_Int, HLSLBaseType_RWTexture1D),
+        IMAGE_INTRINSIC_SIZE("ImageSize", HLSLBaseType_Int2, HLSLBaseType_RWTexture2D),
+        IMAGE_INTRINSIC_SIZE("ImageSize", HLSLBaseType_Int3, HLSLBaseType_RWTexture3D),
+
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("ImageLoad", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("ImageLoad", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        SAMPLING_INTRINSIC_FUNCTION_ARG1("ImageLoad", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+            
+        IMAGE_INTRINSIC_STORE("ImageStore", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_INTRINSIC_STORE("ImageStore", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_INTRINSIC_STORE("ImageStore", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicExchange", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicExchange", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicExchange", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG2("ImageAtomicCompSwap", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG2("ImageAtomicCompSwap", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG2("ImageAtomicCompSwap", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicAdd", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicAdd", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicAdd", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+            
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicAnd", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicAnd", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicAnd", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+            
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicOr", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicOr", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicOr", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+            
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicXor", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicXor", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicXor", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicMin", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicMin", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicMin", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
+            
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicMax", HLSLBaseType_RWTexture1D, HLSLBaseType_Int),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicMax", HLSLBaseType_RWTexture2D, HLSLBaseType_Int2),
+        IMAGE_ATOMIC_INTRINSIC_FUNCTION_ARG1("ImageAtomicMax", HLSLBaseType_RWTexture3D, HLSLBaseType_Int3),
             
         Intrinsic("tex2Dcmp", HLSLBaseType_Float4, HLSLBaseType_Texture2D, HLSLBaseType_Float4),                // @@ IC: This really takes a float3 (uvz) and returns a float.
 
@@ -748,16 +726,18 @@ const BaseTypeDescription _baseTypeDescriptions[HLSLBaseType_Count] =
         { "uint3",              NumericType_Uint,       3, 1, 1,  2 },      // HLSLBaseType_Uint3
         { "uint4",              NumericType_Uint,       4, 1, 1,  2 },      // HLSLBaseType_Uint4
 
-        { "texture",            NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture
-        { "sampler",            NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Sampler
-        { "sampler2D",          NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Sampler2D
-        { "sampler3D",          NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Sampler3D
-        { "samplerCUBE",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_SamplerCube
-        { "sampler2DShadow",    NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Sampler2DShadow
-        { "sampler2DMS",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Sampler2DMS
-        { "sampler2DArray",     NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Sampler2DArray
-        { "user defined",       NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_UserDefined
-        { "expression",         NumericType_NaN,        1, 0, 0, -1 }       // HLSLBaseType_Expression
+        { "Texture1D",          NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture1D
+        { "Texture2D",          NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture2D
+        { "Texture3D",          NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture3D
+        { "TextureCube",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_TextureCube
+        { "TextureCubeArray",   NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_TextureCubeArray
+        { "Texture2DMS",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture2DMS
+        { "Texture1DArray",     NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture1DArray
+        { "Texture2DArray",     NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture2DArray
+        { "Texture2DMSArray",   NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_Texture2DMSArray
+        { "RWTexture1D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture1D
+        { "RWTexture2D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture2D
+        { "RWTexture3D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture3D
     };
 
 // IC: I'm not sure this table is right, but any errors should be caught by the backend compiler.
@@ -1064,7 +1044,7 @@ static int GetTypeCastRank(HLSLTree * tree, const HLSLType& srcType, const HLSLT
 
     if (srcType.baseType == dstType.baseType)
     {
-        if (IsReadTextureType(srcType.baseType))
+        if (IsReadTextureType(srcType.baseType) || IsWriteTextureType(srcType.baseType))
         {
             return srcType.samplerType == dstType.samplerType ? 0 : -1;
         }
@@ -1554,20 +1534,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
             HLSLDeclaration* declaration = m_tree->AddNode<HLSLDeclaration>(fileName, line);
             declaration->name            = globalName;
             declaration->type            = type;
-
-            // Handle array syntax.
-            if (Accept('['))
-            {
-                if (!Accept(']'))
-                {
-                    if (!ParseExpression(declaration->type.arraySize) || !Expect(']'))
-                    {
-                        return false;
-                    }
-                }
-                declaration->type.array = true;
-            }
-
+            
             // Handle optional register.
             if (IsReadTextureType(type))
             {
@@ -1582,6 +1549,35 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                     return false;
                 }
             }
+            else if (IsWriteTextureType(type))
+            {
+                if (!Expect(':'))
+                {
+                    m_tokenizer.Error("Syntax error! Expected input register for rw texture declaration");
+                    return false;
+                }
+
+                if (!AcceptIdentifier(declaration->registerName))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Handle array syntax.
+                if (Accept('['))
+                {
+                    if (!Accept(']'))
+                    {
+                        if (!ParseExpression(declaration->type.arraySize) || !Expect(']'))
+                        {
+                            return false;
+                        }
+                    }
+                    declaration->type.array = true;
+                }
+            }
+
 
             DeclareVariable( globalName, declaration->type );
 
