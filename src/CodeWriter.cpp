@@ -140,6 +140,11 @@ const char* CodeWriter::GetResult() const
     return m_buffer.c_str();
 }
 
+size_t CodeWriter::GetResultLength() const
+{
+    return m_buffer.length();
+}
+
 void CodeWriter::Reset()
 {
     m_buffer.clear();

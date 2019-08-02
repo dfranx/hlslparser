@@ -45,7 +45,7 @@ struct Logger
     void (*LogErrorArgList)(void* userData, const char* format, va_list args);
 };
 
-
+typedef const char*(*FileReadCallback)(const char* fileName);
 
 // Engine/String.h
 
@@ -107,6 +107,13 @@ public:
 
         return buffer[old_size];
     }
+    void PopBack() {
+        if (size == 0)
+            return;
+
+        (buffer + (--size))->~T();
+    }
+
     void Resize(int new_size) {
         int old_size = size;
 
