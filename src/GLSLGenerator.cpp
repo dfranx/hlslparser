@@ -304,9 +304,8 @@ GLSLGenerator::GLSLGenerator(Logger* logger) :
     m_outputTargets             = 0;
 }
 
-bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, const char* entryName, const Options& options)
+bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, const char* entryName, const Options& options, const char* customHeader)
 {
-
     m_tree      = tree;
     m_entryName = entryName;
     m_target    = target;
@@ -393,6 +392,9 @@ bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, con
         Error("Unrecognized target version");
         return false;
     }
+
+    if(customHeader != NULL)
+        m_writer.WriteLine(0, customHeader);
 
     // Output the special function used to access rows in a matrix.
     m_writer.WriteLine(0, "vec3 %s(mat3 m, int i) { return vec3( m[0][i], m[1][i], m[2][i] ); }", m_matrixRowFunction);

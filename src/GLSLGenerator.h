@@ -58,7 +58,7 @@ public:
 
     GLSLGenerator(Logger* logger);
     
-    bool Generate(HLSLTree* tree, Target target, Version versiom, const char* entryName, const Options& options = Options());
+    bool Generate(HLSLTree* tree, Target target, Version versiom, const char* entryName, const Options& options = Options(), const char* customHeader = NULL);
     const char* GetResult() const;
 
 private:
