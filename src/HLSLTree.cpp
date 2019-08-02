@@ -246,47 +246,6 @@ HLSLStruct * HLSLTree::FindGlobalStruct(const char * name)
     return NULL;
 }
 
-HLSLPipeline * HLSLTree::FindFirstPipeline()
-{
-    return FindNextPipeline(NULL);
-}
-
-HLSLPipeline * HLSLTree::FindNextPipeline(HLSLPipeline * current)
-{
-    HLSLStatement * statement = current ? current : m_root->statement;
-    while (statement != NULL)
-    {
-        if (statement->nodeType == HLSLNodeType_Pipeline)
-        {
-            return (HLSLPipeline *)statement;
-        }
-
-        statement = statement->nextStatement;
-    }
-
-    return NULL;
-}
-
-HLSLPipeline * HLSLTree::FindPipeline(const char * name)
-{
-    HLSLStatement * statement = m_root->statement;
-    while (statement != NULL)
-    {
-        if (statement->nodeType == HLSLNodeType_Pipeline)
-        {
-            HLSLPipeline * pipeline = (HLSLPipeline *)statement;
-            if (String_Equal(name, pipeline->name))
-            {
-                return pipeline;
-            }
-        }
-
-        statement = statement->nextStatement;
-    }
-
-    return NULL;
-}
-
 HLSLBuffer * HLSLTree::FindBuffer(const char * name)
 {
     HLSLStatement * statement = m_root->statement;
@@ -705,9 +664,6 @@ void HLSLTreeVisitor::VisitTopLevelStatement(HLSLStatement * node)
     else if (node->nodeType == HLSLNodeType_Function) {
         VisitFunction((HLSLFunction *)node);
     }
-    else if (node->nodeType == HLSLNodeType_Pipeline) {
-        VisitPipeline((HLSLPipeline *)node);
-    }
     else {
         ASSERT(0);
     }
@@ -972,11 +928,6 @@ void HLSLTreeVisitor::VisitSamplerState(HLSLSamplerState * node)
         VisitStateAssignment(stateAssignment);
         stateAssignment = stateAssignment->nextStateAssignment;
     }
-}
-
-void HLSLTreeVisitor::VisitPipeline(HLSLPipeline * node)
-{
-    // @@ ?
 }
 
 void HLSLTreeVisitor::VisitFunctions(HLSLRoot * root)

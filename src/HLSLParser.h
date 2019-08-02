@@ -10,8 +10,6 @@
 #ifndef HLSL_PARSER_H
 #define HLSL_PARSER_H
 
-//#include "Engine/StringPool.h"
-//#include "Engine/Array.h"
 #include "Engine.h"
 
 #include "HLSLTokenizer.h"
@@ -81,12 +79,10 @@ private:
     bool ParseDeclarationAssignment(HLSLDeclaration* declaration);
     bool ParsePartialConstructor(HLSLExpression*& expression, HLSLBaseType type, const char* typeName);
 
-    bool ParseStateName(bool isSamplerState, bool isPipelineState, const char*& name, const EffectState *& state);
-    bool ParseColorMask(int& mask);
+    bool ParseSamplerStateName(const EffectState *& state);
     bool ParseStateValue(const EffectState * state, HLSLStateAssignment* stateAssignment);
-    bool ParseStateAssignment(HLSLStateAssignment*& stateAssignment, bool isSamplerState, bool isPipelineState);
-    bool ParseSamplerState(HLSLExpression*& expression);
-    bool ParsePipeline(HLSLStatement*& pipeline);
+    bool ParseSamplerStateAssignment(HLSLStateAssignment*& stateAssignment);
+    bool ParseSamplerState(const char* registerName);
 
     bool ParseAttributeList(HLSLAttribute*& attribute);
     bool ParseAttributeBlock(HLSLAttribute*& attribute);

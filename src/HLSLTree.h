@@ -41,7 +41,6 @@ enum HLSLNodeType
     HLSLNodeType_StateAssignment,
     HLSLNodeType_SamplerState,
     HLSLNodeType_Attribute,
-    HLSLNodeType_Pipeline,
     HLSLNodeType_Stage,
 };
 
@@ -831,6 +830,7 @@ struct HLSLStateAssignment : public HLSLNode
         int                 iValue;
         float               fValue;
         const char *        sValue;
+        float               colorValue[4];
     };
     HLSLStateAssignment*    nextStateAssignment;
 };
@@ -844,21 +844,6 @@ struct HLSLSamplerState : public HLSLExpression // @@ Does this need to be an ex
         stateAssignments = NULL;
     }
 
-    int                     numStateAssignments;
-    HLSLStateAssignment*    stateAssignments;
-};
-
-struct HLSLPipeline : public HLSLStatement
-{
-    static const HLSLNodeType s_type = HLSLNodeType_Pipeline;
-    HLSLPipeline()
-    {
-        name = NULL;
-        numStateAssignments = 0;
-        stateAssignments = NULL;
-    }
-    
-    const char*             name;
     int                     numStateAssignments;
     HLSLStateAssignment*    stateAssignments;
 };
@@ -898,9 +883,6 @@ public:
     HLSLFunction * FindFunction(const char * name);
     HLSLDeclaration * FindGlobalDeclaration(const char * name, HLSLBuffer ** buffer_out = NULL);
     HLSLStruct * FindGlobalStruct(const char * name);
-    HLSLPipeline * FindFirstPipeline();
-    HLSLPipeline * FindNextPipeline(HLSLPipeline * current);
-    HLSLPipeline * FindPipeline(const char * name);
     HLSLBuffer * FindBuffer(const char * name);
 
     bool GetExpressionValue(HLSLExpression * expression, int & value);
@@ -972,7 +954,6 @@ public:
     virtual void VisitFunctionCall(HLSLFunctionCall * node);
     virtual void VisitStateAssignment(HLSLStateAssignment * node);
     virtual void VisitSamplerState(HLSLSamplerState * node);
-    virtual void VisitPipeline(HLSLPipeline * node);
 
 
     virtual void VisitFunctions(HLSLRoot * root);

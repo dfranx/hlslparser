@@ -150,64 +150,33 @@ Intrinsic ImageIntrinsic(const char* name, HLSLBaseType returnType, HLSLBaseType
     return i;
 }
 
-    static const EffectState effectStates[] = {
-        {"VertexShader", 0, NULL},
-        {"PixelShader", 0, NULL},
-        {"AlphaBlendEnable", 27, booleanValues},
-        {"SrcBlend", 19, blendValues},
-        {"DestBlend", 20, blendValues},
-        {"BlendOp", 171, blendOpValues},
-        {"SeparateAlphaBlendEanble", 206, booleanValues},
-        {"SrcBlendAlpha", 207, blendValues},
-        {"DestBlendAlpha", 208, blendValues},
-        {"BlendOpAlpha", 209, blendOpValues},
-        {"AlphaTestEnable", 15, booleanValues},
-        {"AlphaRef", 24, integerValues},
-        {"AlphaFunc", 25, cmpValues},
-        {"CullMode", 22, cullValues},
-        {"ZEnable", 7, booleanValues},
-        {"ZWriteEnable", 14, booleanValues},
-        {"ZFunc", 23, cmpValues},
-        {"StencilEnable", 52, booleanValues},
-        {"StencilFail", 53, stencilOpValues},
-        {"StencilZFail", 54, stencilOpValues},
-        {"StencilPass", 55, stencilOpValues},
-        {"StencilFunc", 56, cmpValues},
-        {"StencilRef", 57, integerValues},
-        {"StencilMask", 58, integerValues},
-        {"StencilWriteMask", 59, integerValues},
-        {"TwoSidedStencilMode", 185, booleanValues},
-        {"CCW_StencilFail", 186, stencilOpValues},
-        {"CCW_StencilZFail", 187, stencilOpValues},
-        {"CCW_StencilPass", 188, stencilOpValues},
-        {"CCW_StencilFunc", 189, cmpValues},
-        {"ColorWriteEnable", 168, colorMaskValues},
-        {"FillMode", 8, fillModeValues},
-        {"MultisampleAlias", 161, booleanValues},
-        {"MultisampleMask", 162, integerValues},
-        {"ScissorTestEnable", 174, booleanValues},
-        {"SlopeScaleDepthBias", 175, floatValues},
-        {"DepthBias", 195, floatValues}
-    };
+enum NumericType
+{
+    NumericType_Float,
+    NumericType_Half,
+    NumericType_Bool,
+    NumericType_Int,
+    NumericType_Uint,
+    NumericType_Count,
+    NumericType_NaN,
+};
 
+static const int _numberTypeRank[NumericType_Count][NumericType_Count] =
+{
+    //F  H  B  I  U    
+    { 0, 4, 4, 4, 4 },  // NumericType_Float
+    { 1, 0, 4, 4, 4 },  // NumericType_Half
+    { 5, 5, 0, 5, 5 },  // NumericType_Bool
+    { 5, 5, 4, 0, 3 },  // NumericType_Int
+    { 5, 5, 4, 2, 0 }   // NumericType_Uint
+};
 
-    static const EffectStateValue witnessCullModeValues[] = {
-        {"None", 0},
-        {"Back", 1},
-        {"Front", 2},
-        {NULL, 0}
-    };
 struct HLSLImageFormatDescriptor
 {
     NumericType numericType;
     int dimensions;
 };
 
-    static const EffectStateValue witnessFillModeValues[] = {
-        {"Solid", 0},
-        {"Wireframe", 1},
-        {NULL, 0}
-    };
 static const HLSLImageFormatDescriptor _imageFormatDescriptors[]
 {
     { NumericType_Float, 4 }, // RGBA32F,
@@ -251,72 +220,72 @@ static const HLSLImageFormatDescriptor _imageFormatDescriptors[]
     { NumericType_Uint, 1 }, // R8UI,
 };
 
-    static const EffectStateValue witnessBlendModeValues[] = {
-        {"Disabled", 0},
-        {"AlphaBlend", 1},          // src * a + dst * (1-a)
-        {"Add", 2},                 // src + dst
-        {"Mixed", 3},               // src + dst * (1-a)
-        {"Multiply", 4},            // src * dst
-        {"Multiply2", 5},           // 2 * src * dst
-        {NULL, 0}
-    };
+struct EffectStateValue
+{
+    const char * name;
+    int value;
+};
 
-    static const EffectStateValue witnessDepthFuncValues[] = {
-        {"LessEqual", 0},
-        {"Less", 1},
-        {"Equal", 2},
-        {"Greater", 3},
-        {"Always", 4},
-        {NULL, 0}
-    };
+static const EffectStateValue textureFilteringValues[] = {
+    { "Point", 0 },
+    { "Linear", 1 },
+    { "Mipmap_Nearest", 2 },
+    { "Mipmap_Best", 3 },     // Quality of mipmap filtering depends on render settings.
+    { "Anisotropic", 4 },     // Aniso without mipmaps for reflection maps.
+    {NULL, 0}
+};
 
-    static const EffectStateValue witnessStencilModeValues[] = {
-        {"Disabled", 0},
-        {"Set", 1},
-        {"Test", 2},
-        {NULL, 0}
-    };
+static const EffectStateValue textureAddressingValues[] = {
+    {"Wrap", 1},
+    {"Mirror", 2},
+    {"Clamp", 3},
+    {"Border", 4},
+    {"MirrorOnce", 5},
+    {NULL, 0}
+};
 
-    static const EffectStateValue witnessFilterModeValues[] = {
-        {"Point", 0},
-        {"Linear", 1},
-        {"Mipmap_Nearest", 2},
-        {"Mipmap_Best", 3},     // Quality of mipmap filtering depends on render settings.
-        {"Anisotropic", 4},     // Aniso without mipmaps for reflection maps.
-        {NULL, 0}
-    };
+static const EffectStateValue cmpValues[] = {
+    { "Never", 1 },
+    { "Less", 2 },
+    { "Equal", 3 },
+    { "LessEqual", 4 },
+    { "Greater", 5 },
+    { "NotEqual", 6 },
+    { "GreaterEqual", 7 },
+    { "Always", 8 },
+    { NULL, 0 }
+};
 
-    static const EffectStateValue witnessWrapModeValues[] = {
-        {"Repeat", 0},
-        {"Clamp", 1},
-        {"ClampToBorder", 2},
-        {NULL, 0}
-    };
+static const EffectStateValue floatValues[] = 
+{
+    {NULL, 0}
+};
 
-    static const EffectState pipelineStates[] = {
-        {"VertexShader", 0, NULL},
-        {"PixelShader", 0, NULL},
+static const EffectStateValue colorValues[] =
+{
+    {NULL, 0}
+};
 
-        // Depth_Stencil_State
-        {"DepthWrite", 0, booleanValues},
-        {"DepthEnable", 0, booleanValues},
-        {"DepthFunc", 0, witnessDepthFuncValues},
-        {"StencilMode", 0, witnessStencilModeValues},
+struct EffectState
+{
+    const char * name;
+    int d3drs;
+    const EffectStateValue * values;
+};
 
-        // Raster_State
-        {"CullMode", 0, witnessCullModeValues},
-        {"FillMode", 0, witnessFillModeValues},
-        {"MultisampleEnable", 0, booleanValues},
-        {"PolygonOffset", 0, booleanValues},
-
-        // Blend_State
-        {"BlendMode", 0, witnessBlendModeValues},
-        {"ColorWrite", 0, booleanValues},
-        {"AlphaWrite", 0, booleanValues},
-        {"AlphaTest", 0, booleanValues},       // This is really alpha to coverage.
-    };
-
-
+static const EffectState samplerStates[] = {
+    {"AddressU", 1, textureAddressingValues},
+    {"AddressV", 2, textureAddressingValues},
+    {"AddressW", 3, textureAddressingValues},
+    {"BorderColor", 4, colorValues},
+    {"MagFilter", 5, textureFilteringValues},
+    {"MinFilter", 6, textureFilteringValues},
+    {"MipMapLodBias", 7, floatValues},
+    {"MinMipLevel", 8, floatValues },
+    {"MaxMipLevel", 9, floatValues},
+    {"MaxAnisotropy", 10, floatValues },
+    {"ComparisonFunction", 11, cmpValues},
+};
 
 struct BaseTypeDescription
 {
@@ -1586,13 +1555,15 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                 return false;
             }
 
+            if (IsReadTextureType(type) && !ParseSamplerState(declaration->registerName))
+            {
+                return false;
+            }
+
             // TODO: Multiple variables declared on one line.
             
             statement = declaration;
         }
-    }
-    else if (ParsePipeline(statement)) {
-        doesNotExpectSemicolon = true;
     }
 
     if (statement != NULL) {
@@ -1949,13 +1920,6 @@ bool HLSLParser::ParseDeclarationAssignment(HLSLDeclaration* declaration)
         {
             int numValues = 0;
             if (!Expect('{') || !ParseExpressionList('}', true, declaration->assignment, numValues))
-            {
-                return false;
-            }
-        }
-        else if (IsReadTextureType(declaration->type.baseType))
-        {
-            if (!ParseSamplerState(declaration->assignment))
             {
                 return false;
             }
@@ -2710,122 +2674,51 @@ bool HLSLParser::ParseArgumentList(HLSLArgument*& firstArgument, int& numArgumen
 }
 
 
-bool HLSLParser::ParseSamplerState(HLSLExpression*& expression)
+bool HLSLParser::ParseSamplerState(const char* registerName)
 {
-    if (!Expect(HLSLToken_SamplerState))
-    {
-        return false;
-    }
-
     const char* fileName = GetFileName();
     int         line     = GetLineNumber();
-
-    HLSLSamplerState* samplerState = m_tree->AddNode<HLSLSamplerState>(fileName, line);
-
-    if (!Expect('{'))
-    {
-        return false;
-    }
-
-    HLSLStateAssignment* lastStateAssignment = NULL;
-
-    // Parse state assignments.
-    while (!Accept('}'))
-    {
-        if (CheckForUnexpectedEndOfStream('}'))
-        {
-            return false;
-        }
-
-        HLSLStateAssignment* stateAssignment = NULL;
-        if (!ParseStateAssignment(stateAssignment, /*isSamplerState=*/true, /*isPipeline=*/false))
-        {
-            return false;
-        }
-        ASSERT(stateAssignment != NULL);
-        if (lastStateAssignment == NULL)
-        {
-            samplerState->stateAssignments = stateAssignment;
-        }
-        else
-        {
-            lastStateAssignment->nextStateAssignment = stateAssignment;
-        }
-        lastStateAssignment = stateAssignment;
-        samplerState->numStateAssignments++;
-    }
-
-    expression = samplerState;
-    return true;
-}
-
-bool HLSLParser::ParsePipeline(HLSLStatement*& statement)
-{
-    if (!Accept("pipeline")) {
-        return false;
-    }
-
-    // Optional pipeline name.
-    const char* pipelineName = NULL;
-    AcceptIdentifier(pipelineName);
-
-    if (!Expect('{'))
-    {
-        return false;
-    }
-
-    HLSLPipeline* pipeline = m_tree->AddNode<HLSLPipeline>(GetFileName(), GetLineNumber());
-    pipeline->name = pipelineName;
-
-    HLSLStateAssignment* lastStateAssignment = NULL;
-
-    // Parse state assignments.
-    while (!Accept('}'))
-    {
-        if (CheckForUnexpectedEndOfStream('}'))
-        {
-            return false;
-        }
-
-        HLSLStateAssignment* stateAssignment = NULL;
-        if (!ParseStateAssignment(stateAssignment, /*isSamplerState=*/false, /*isPipeline=*/true))
-        {
-            return false;
-        }
-        ASSERT(stateAssignment != NULL);
-        if (lastStateAssignment == NULL)
-        {
-            pipeline->stateAssignments = stateAssignment;
-        }
-        else
-        {
-            lastStateAssignment->nextStateAssignment = stateAssignment;
-        }
-        lastStateAssignment = stateAssignment;
-        pipeline->numStateAssignments++;
-    }
-
-    statement = pipeline;
-    return true;
-}
-
-
-const EffectState* GetEffectState(const char* name, bool isSamplerState, bool isPipeline)
-{
-    const EffectState* validStates = effectStates;
-    int count = sizeof(effectStates)/sizeof(effectStates[0]);
     
-    if (isPipeline)
+    if (Accept('{'))
     {
-        validStates = pipelineStates;
-        count = sizeof(pipelineStates) / sizeof(pipelineStates[0]);
+        HLSLSamplerState* samplerState = m_tree->AddNode<HLSLSamplerState>(fileName, line);
+        HLSLStateAssignment* lastStateAssignment = NULL;
+
+        // Parse state assignments.
+        while (!Accept('}'))
+        {
+            if (CheckForUnexpectedEndOfStream('}'))
+            {
+                return false;
+            }
+
+            HLSLStateAssignment* stateAssignment = NULL;
+            if (!ParseSamplerStateAssignment(stateAssignment))
+            {
+                return false;
+            }
+            ASSERT(stateAssignment != NULL);
+            if (lastStateAssignment == NULL)
+            {
+                samplerState->stateAssignments = stateAssignment;
+            }
+            else
+            {
+                lastStateAssignment->nextStateAssignment = stateAssignment;
+            }
+            lastStateAssignment = stateAssignment;
+            samplerState->numStateAssignments++;
+        }
+        //TODO save sampler to list
     }
 
-    if (isSamplerState)
-    {
-        validStates = samplerStates;
-        count = sizeof(samplerStates)/sizeof(samplerStates[0]);
-    }
+    return true;
+}
+
+const EffectState* GetSamplerState(const char* name)
+{
+    const EffectState* validStates = samplerStates;
+    int count = sizeof(samplerStates) / sizeof(samplerStates[0]);
 
     // Case insensitive comparison.
     for (int i = 0; i < count; i++)
@@ -2839,7 +2732,7 @@ const EffectState* GetEffectState(const char* name, bool isSamplerState, bool is
     return NULL;
 }
 
-static const EffectStateValue* GetStateValue(const char* name, const EffectState* state)
+static const EffectStateValue* GetSamplerStateValue(const char* name, const EffectState* state)
 {
     // Case insensitive comparison.
     for (int i = 0; ; i++) 
@@ -2857,7 +2750,7 @@ static const EffectStateValue* GetStateValue(const char* name, const EffectState
 }
 
 
-bool HLSLParser::ParseStateName(bool isSamplerState, bool isPipelineState, const char*& name, const EffectState *& state)
+bool HLSLParser::ParseSamplerStateName(const EffectState *& state)
 {
     if (m_tokenizer.GetToken() != HLSLToken_Identifier)
     {
@@ -2867,7 +2760,7 @@ bool HLSLParser::ParseStateName(bool isSamplerState, bool isPipelineState, const
         return false;
     }
 
-    state = GetEffectState(m_tokenizer.GetIdentifier(), isSamplerState, isPipelineState);
+    state = GetSamplerState(m_tokenizer.GetIdentifier());
     if (state == NULL)
     {
         m_tokenizer.Error("Syntax error: unexpected identifier '%s'", m_tokenizer.GetIdentifier());
@@ -2878,42 +2771,12 @@ bool HLSLParser::ParseStateName(bool isSamplerState, bool isPipelineState, const
     return true;
 }
 
-bool HLSLParser::ParseColorMask(int& mask)
-{
-    mask = 0;
-
-    do {
-        if (m_tokenizer.GetToken() == HLSLToken_IntLiteral) {
-            mask |= m_tokenizer.GetInt();
-        }
-        else if (m_tokenizer.GetToken() == HLSLToken_Identifier) {
-            const char * ident = m_tokenizer.GetIdentifier();
-            const EffectStateValue * stateValue = colorMaskValues;
-            while (stateValue->name != NULL) {
-                if (String_EqualNoCase(stateValue->name, ident)) {
-                    mask |= stateValue->value;
-                    break;
-                }
-                ++stateValue;
-            }
-        }
-        else {
-            return false;
-        }
-        m_tokenizer.Next();
-    } while (Accept('|'));
-
-    return true;
-}
-
 bool HLSLParser::ParseStateValue(const EffectState * state, HLSLStateAssignment* stateAssignment)
 {
-    const bool expectsExpression = state->values == colorMaskValues;
-    const bool expectsInteger = state->values == integerValues;
     const bool expectsFloat = state->values == floatValues;
-    const bool expectsBoolean = state->values == booleanValues;
+    const bool expectsColor = state->values == colorValues;
 
-    if (!expectsExpression && !expectsInteger && !expectsFloat && !expectsBoolean) 
+    if (!expectsColor && !expectsFloat)
     {
         if (m_tokenizer.GetToken() != HLSLToken_Identifier)
         {
@@ -2943,57 +2806,64 @@ bool HLSLParser::ParseStateValue(const EffectState * state, HLSLStateAssignment*
         }
     }
     else {
-        if (expectsInteger)
+        if (expectsFloat)
         {
-            if (!AcceptInt(stateAssignment->iValue))
+            if (!AcceptFloat(stateAssignment->fValue) && !AcceptHalf(stateAssignment->fValue))
             {
-                m_tokenizer.Error("Syntax error: expected integer near '%s'", m_tokenizer.GetIdentifier());
+                m_tokenizer.Error("Syntax error: expected float or half near '%s'", m_tokenizer.GetIdentifier());
                 stateAssignment->iValue = 0;
                 return false;
             }
         }
-        else if (expectsFloat)
+        else if (expectsColor)
         {
-            if (!AcceptFloat(stateAssignment->fValue))
-            {
-                m_tokenizer.Error("Syntax error: expected float near '%s'", m_tokenizer.GetIdentifier());
-                stateAssignment->iValue = 0;
+            if (!Expect(HLSLToken_Float4))
                 return false;
-            }
-        }
-        else if (expectsBoolean)
-        {
-            const EffectStateValue * stateValue = GetStateValue(m_tokenizer.GetIdentifier(), state);
 
-            if (stateValue != NULL)
-            {
-                stateAssignment->iValue = stateValue->value;
+            if (!Expect('('))
+                return false;
+            
+            int temp = 0;
+            if (!AcceptFloat(stateAssignment->colorValue[0]) && !AcceptHalf(stateAssignment->colorValue[0]))
+                if (!AcceptInt(temp))
+                    return false;
+                else
+                    stateAssignment->colorValue[0] = (float)temp;
 
-                m_tokenizer.Next();
-            }
-            else if (AcceptInt(stateAssignment->iValue))
-            {
-                stateAssignment->iValue = (stateAssignment->iValue != 0);
-            }
-            else {
-                m_tokenizer.Error("Syntax error: expected bool near '%s'", m_tokenizer.GetIdentifier());
-                stateAssignment->iValue = 0;
+            if (!Expect(','))
                 return false;
-            }
-        }
-        else if (expectsExpression)
-        {
-            if (!ParseColorMask(stateAssignment->iValue))
-            {
-                m_tokenizer.Error("Syntax error: expected color mask near '%s'", m_tokenizer.GetIdentifier());
-                stateAssignment->iValue = 0;
+
+            if (!AcceptFloat(stateAssignment->colorValue[1]) && !AcceptHalf(stateAssignment->colorValue[1]))
+                if (!AcceptInt(temp))
+                    return false;
+                else
+                    stateAssignment->colorValue[1] = (float)temp;
+
+            if (!Expect(','))
                 return false;
-            }
+
+            if (!AcceptFloat(stateAssignment->colorValue[2]) && !AcceptHalf(stateAssignment->colorValue[2]))
+                if (!AcceptInt(temp))
+                    return false;
+                else
+                    stateAssignment->colorValue[2] = (float)temp;
+
+            if (!Expect(','))
+                return false;
+
+            if (!AcceptFloat(stateAssignment->colorValue[3]) && !AcceptHalf(stateAssignment->colorValue[3]))
+                if (!AcceptInt(temp))
+                    return false;
+                else
+                    stateAssignment->colorValue[3] = (float)temp;
+
+            if (!Expect(')'))
+                return false;
         }
         else 
         {
             // Expect one of the allowed values.
-            const EffectStateValue * stateValue = GetStateValue(m_tokenizer.GetIdentifier(), state);
+            const EffectStateValue * stateValue = GetSamplerStateValue(m_tokenizer.GetIdentifier(), state);
 
             if (stateValue == NULL)
             {
@@ -3011,7 +2881,7 @@ bool HLSLParser::ParseStateValue(const EffectState * state, HLSLStateAssignment*
     return true;
 }
 
-bool HLSLParser::ParseStateAssignment(HLSLStateAssignment*& stateAssignment, bool isSamplerState, bool isPipelineState)
+bool HLSLParser::ParseSamplerStateAssignment(HLSLStateAssignment*& stateAssignment)
 {
     const char* fileName = GetFileName();
     int         line     = GetLineNumber();
@@ -3019,11 +2889,10 @@ bool HLSLParser::ParseStateAssignment(HLSLStateAssignment*& stateAssignment, boo
     stateAssignment = m_tree->AddNode<HLSLStateAssignment>(fileName, line);
 
     const EffectState * state;
-    if (!ParseStateName(isSamplerState, isPipelineState, stateAssignment->stateName, state)) {
+    if (!ParseSamplerStateName(state)) {
         return false;
     }
 
-    //stateAssignment->name = m_tree->AddString(m_tokenizer.GetIdentifier());
     stateAssignment->stateName = state->name;
     stateAssignment->d3dRenderState = state->d3drs;
 
@@ -3195,6 +3064,9 @@ HLSLBaseType HLSLParser::TokenToBaseType(int token)
     case HLSLToken_Texture1DArray: return HLSLBaseType_Texture1DArray;
     case HLSLToken_Texture2DArray: return HLSLBaseType_Texture2DArray;
     case HLSLToken_Texture2DMSArray: return HLSLBaseType_Texture2DMSArray;
+    case HLSLToken_RWTexture1D: return HLSLBaseType_RWTexture1D;
+    case HLSLToken_RWTexture2D: return HLSLBaseType_RWTexture2D;
+    case HLSLToken_RWTexture3D: return HLSLBaseType_RWTexture3D;
     default: return HLSLBaseType_Void;
     }
 }
@@ -3267,6 +3139,17 @@ bool HLSLParser::AcceptInterpolationModifier(int& flags)
     return false;
 }
 
+bool HLSLParser::ExpectImageFormat(HLSLImageFormat& imageFormat)
+{
+    if (m_tokenizer.GetToken() >= HLSLToken_ImageFormat_First && m_tokenizer.GetToken() <= HLSLToken_ImageFormat_Last)
+    {
+        imageFormat = (HLSLImageFormat)(m_tokenizer.GetToken() - (int)HLSLToken_ImageFormat_First);
+        m_tokenizer.Next();
+        return true;
+    }
+    return false;
+}
+
 bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/)
 {
     //if (type.flags != NULL)
@@ -3284,9 +3167,9 @@ bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/
     {
         m_tokenizer.Next();
         
-        if (IsReadTextureType(type.baseType))
+        if (IsReadTextureType(type))
         {
-            if (!Accept('<'))
+            if (!Expect('<'))
                 return false;
 
             int token = m_tokenizer.GetToken();
@@ -3309,9 +3192,21 @@ bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/
                 }
             }
             if (!Expect('>'))
-            {
                 return false;
-            }
+        }
+        else if (IsWriteTextureType(type))
+        {
+            if (!Expect('<'))
+                return false;
+            
+            if (!ExpectImageFormat(type.imageFormat))
+                return false;
+
+            //Handle image format
+            type.samplerType = HLSLBaseType_Float4;
+
+            if (!Expect('>'))
+                return false;
         }
         return true;
     }
@@ -3378,6 +3273,10 @@ bool HLSLParser::ExpectDeclaration(bool allowUnsizedArray, HLSLType& type, const
 {
     if (!AcceptDeclaration(allowUnsizedArray, type, name))
     {
+        if (!ExpectType(/*allowVoid=*/false, type))
+        {
+            return false;
+        }
         m_tokenizer.Error("Expected declaration");
         return false;
     }
