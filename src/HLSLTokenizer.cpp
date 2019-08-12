@@ -423,7 +423,7 @@ bool HLSLTokenizer::ScanNumber()
 	if( fEnd > iEnd && GetIsNumberSeparator( fEnd[ 0 ] ) )
 	{
 		m_buffer = fEnd;
-		m_token = fEnd[ 0 ] == 'f' ? HLSLToken_FloatLiteral : HLSLToken_HalfLiteral;
+		m_token = HLSLToken_FloatLiteral;
         m_fValue = static_cast<float>(fValue);
         return true;
     }
