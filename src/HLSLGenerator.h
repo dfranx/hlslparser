@@ -34,12 +34,13 @@ public:
     {
         Target_VertexShader,
         Target_PixelShader,
+        Target_ComputeShader,
     };
 
     HLSLGenerator(Logger* logger);
 
-    bool Generate(HLSLTree* tree, Target target, const char* entryName, bool legacy);
-    const char* GetResult() const;
+    bool Generate(HLSLTree* tree, Target target, const char* entryName, bool legacy, const char* customHeader = NULL);
+    const char* GetResult(size_t& outLength) const;
 
 private:
 

@@ -151,7 +151,7 @@ static const char * TranslateSemantic(const char* semantic, bool output, HLSLGen
     return NULL;
 }
 
-bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryName, bool legacy)
+bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryName, bool legacy, const char* customHeader)
 {
     m_tree      = tree;
     m_entryName = entryName;
@@ -262,6 +262,9 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
     ChooseUniqueName("texCUBEbias",                 m_texCubeBiasFunction,      sizeof(m_texCubeBiasFunction));
     ChooseUniqueName("texCUBEsize",                 m_texCubeSizeFunction,      sizeof(m_texCubeSizeFunction));
 
+    if(customHeader != NULL)
+        m_writer.WriteLine(0, customHeader);
+
     if (!m_legacy)
     {        
         /*
@@ -367,8 +370,9 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
     return true;
 }
 
-const char* HLSLGenerator::GetResult() const
+const char* HLSLGenerator::GetResult(size_t& outLength) const
 {
+    outLength = m_writer.GetResultLength();
     return m_writer.GetResult();
 }
 
@@ -702,8 +706,30 @@ void HLSLGenerator::OutputAttributes(int indent, HLSLAttribute* attribute)
     while (attribute != NULL)
     {
         const char * attributeName = GetAttributeName(attribute->attributeType);
-    
-        if (attributeName != NULL)
+
+        if (m_target == Target_ComputeShader && attribute->attributeType == HLSLAttributeType_NumThreads)
+        {
+            m_writer.BeginLine(indent, attribute->fileName, attribute->line);
+            HLSLExpression* exp1 = attribute->argument;
+            HLSLExpression* exp2 = exp1 ? exp1->nextExpression : NULL;
+            HLSLExpression* exp3 = exp2 ? exp2->nextExpression : NULL;
+            if (exp3 && !exp3->nextExpression)
+            {
+                m_writer.Write("[numthreads(");
+                OutputExpression(exp1);
+                m_writer.Write(", ");
+                OutputExpression(exp2);
+                m_writer.Write(", ");
+                OutputExpression(exp3);
+                m_writer.Write(")]");
+                m_writer.EndLine();
+            }
+            else
+            {
+                //Error("Something went wrong while declaring numThreads! Expected three Expressions for dispatch dimensions");
+            }
+        }
+        else if (attributeName != NULL)
         {
             m_writer.WriteLineTagged(indent, attribute->fileName, attribute->line, "[%s]", attributeName);
         }
@@ -758,12 +784,8 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             if (!m_legacy)
             {
                 m_writer.BeginLine(indent, buffer->fileName, buffer->line);
-                m_writer.Write("cbuffer %s", buffer->name);
-                if (buffer->registerName != NULL)
-                {
-                    m_writer.Write(" : register(%s)", buffer->registerName);
-                }
-                m_writer.EndLine(" {");
+                m_writer.Write("struct %sType {", buffer->name);
+                m_writer.EndLine();
             }
 
             m_isInsideBuffer = true;
@@ -777,13 +799,23 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                     m_writer.Write(";");
                     m_writer.EndLine();
                 }
-                field = (HLSLDeclaration*)field->nextStatement;
+                field = (HLSLDeclaration*)field->nextDeclaration;
             }
 
             m_isInsideBuffer = false;
 
             if (!m_legacy)
             {
+                m_writer.WriteLine(indent, "};");
+
+                m_writer.BeginLine(indent, buffer->fileName, buffer->line);
+                m_writer.Write("cbuffer cb_%s", buffer->name);
+                if (buffer->registerName != NULL)
+                {
+                    m_writer.Write(" : register(%s)", buffer->registerName);
+                }
+                m_writer.EndLine(" {");
+                m_writer.WriteLine(indent + 1, "%sType %s;", buffer->name, buffer->name);
                 m_writer.WriteLine(indent, "};");
             }
         }
@@ -944,11 +976,11 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
         {
             if (reg != -1)
             {
-                m_writer.Write("%s<%s> %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, declaration->type.samplerType, declaration->type.sampleCount, declaration->name, reg, samplerType, declaration->name, reg);
+                m_writer.Write("%s<%s> %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, GetBaseTypeName(declaration->type.samplerType), declaration->type.sampleCount, declaration->name, reg, samplerType, declaration->name, reg);
             }
             else
             {
-                m_writer.Write("%s<%s> %s_texture; %s %s_sampler", textureType, declaration->type.samplerType, declaration->name, samplerType, declaration->name);
+                m_writer.Write("%s<%s> %s_texture; %s %s_sampler", textureType, GetBaseTypeName(declaration->type.samplerType), declaration->name, samplerType, declaration->name);
             }
         }
         else
