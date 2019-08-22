@@ -3202,8 +3202,17 @@ bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/
             if (!ExpectImageFormat(type.imageFormat))
                 return false;
 
-            //Handle image format
-            type.samplerType = HLSLBaseType_Float4;
+            for (int i = 0; i < HLSLBaseType_Count; ++i)
+            {
+                const BaseTypeDescription& baseTypeDesc = _baseTypeDescriptions[i];
+                const HLSLImageFormatDescriptor& imageFormatDesc = _imageFormatDescriptors[type.imageFormat];
+                if (baseTypeDesc.numericType == imageFormatDesc.numericType &&
+                    baseTypeDesc.numComponents == imageFormatDesc.dimensions)
+                {
+                    type.samplerType = (HLSLBaseType)i;
+                    break;
+                }
+            }
 
             if (!Expect('>'))
                 return false;

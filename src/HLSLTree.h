@@ -129,6 +129,14 @@ enum HLSLBaseType
     HLSLBaseType_NumericCount = HLSLBaseType_LastNumeric - HLSLBaseType_FirstNumeric + 1
 };
 
+enum HLSLRegisterType
+{
+    HLSLRegister_ConstantBuffer,
+    HLSLRegister_ShaderResource,
+    HLSLRegister_Sampler,
+    HLSLRegister_UnorderedAccess
+};
+
 enum HLSLImageFormat
 {
     FirstImageFormat = 0,
@@ -430,6 +438,32 @@ inline bool IsScalarType(const HLSLType & type)
 inline bool IsVectorType(const HLSLType & type)
 {
 	return IsVectorType(type.baseType);
+}
+
+static int GetElementCount(HLSLBaseType type)
+{
+    if (type == HLSLBaseType_Float ||
+        type == HLSLBaseType_Half ||
+        type == HLSLBaseType_Int ||
+        type == HLSLBaseType_Uint)
+        return 1;
+    if (type == HLSLBaseType_Float2 ||
+        type == HLSLBaseType_Half2 ||
+        type == HLSLBaseType_Int2 ||
+        type == HLSLBaseType_Uint2)
+        return 2;
+    if (type == HLSLBaseType_Float3 ||
+        type == HLSLBaseType_Half3 ||
+        type == HLSLBaseType_Int3 ||
+        type == HLSLBaseType_Uint3)
+        return 3;
+    if (type == HLSLBaseType_Float4 ||
+        type == HLSLBaseType_Half4 ||
+        type == HLSLBaseType_Int4 ||
+        type == HLSLBaseType_Uint4)
+        return 4;
+
+    return 0;
 }
 
 

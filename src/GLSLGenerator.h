@@ -61,6 +61,21 @@ public:
     bool Generate(HLSLTree* tree, Target target, Version versiom, const char* entryName, const Options& options = Options(), const char* customHeader = NULL);
     const char* GetResult() const;
 
+    void SetConstantBufferBindSlots(const char* const* bindSlotNames, int numBindSlots)
+    {
+        m_constantBufferBindSlots = bindSlotNames;
+        m_numConstantBufferBindSlots = numBindSlots;
+    }
+    void SetTextureBindSlots(const char* const* bindSlotNames, int numBindSlots)
+    {
+        m_textureBindSlots = bindSlotNames;
+        m_numTextureBindSlots = numBindSlots;
+    }
+    void SetRWTextureBindSlots(const char* const* bindSlotNames, int numBindSlots)
+    {
+        m_RWTextureBindSlots = bindSlotNames;
+        m_numRWTextureBindSlots = numBindSlots;
+    }
 private:
 
     enum AttributeModifier
@@ -71,8 +86,7 @@ private:
 
     void OutputExpressionList(HLSLExpression* expression, HLSLArgument* argument = NULL);
     void OutputExpression(HLSLExpression* expression, const HLSLType* dstType = NULL);
-    void OutputIdentifier(const HLSLExpression* expression);
-    void OutputIdentifierPostfix(const HLSLExpression* expression);
+    void OutputFunctionCall(const HLSLExpression* expression);
     void OutputArguments(HLSLArgument* argument);
     
     /**
@@ -120,8 +134,7 @@ private:
 
     const char* GetBuiltInSemantic(const char* semantic, AttributeModifier modifier, int* outputIndex = 0);
     const char* GetAttribQualifier(AttributeModifier modifier);
-    int MapRegisterNameToIndex(const char* registerName) const;
-
+    int MapRegisterNameToIndex(const char* registerName, HLSLRegisterType registerType) const;
 private:
 
     static const int    s_numReservedWords = 7;
@@ -142,6 +155,13 @@ private:
 
     const char*         m_outAttribPrefix;
     const char*         m_inAttribPrefix;
+
+    const char* const*    m_constantBufferBindSlots;
+    int             m_numConstantBufferBindSlots;
+    const char* const*    m_textureBindSlots;
+    int             m_numTextureBindSlots;
+    const char* const*    m_RWTextureBindSlots;
+    int             m_numRWTextureBindSlots;
 
     char                m_matrixRowFunction[64];
     char                m_matrixCtorFunction[64];

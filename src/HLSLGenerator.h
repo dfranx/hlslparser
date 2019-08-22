@@ -42,17 +42,34 @@ public:
     bool Generate(HLSLTree* tree, Target target, const char* entryName, bool legacy, const char* customHeader = NULL);
     const char* GetResult(size_t& outLength) const;
 
+    void SetConstantBufferBindSlots(const char* const* bindSlotNames, int numBindSlots)
+    {
+        m_constantBufferBindSlots = bindSlotNames;
+        m_numConstantBufferBindSlots = numBindSlots;
+    }
+    void SetTextureBindSlots(const char* const* bindSlotNames, int numBindSlots)
+    {
+        m_textureBindSlots = bindSlotNames;
+        m_numTextureBindSlots = numBindSlots;
+    }
+    void SetRWTextureBindSlots(const char* const* bindSlotNames, int numBindSlots)
+    {
+        m_RWTextureBindSlots = bindSlotNames;
+        m_numRWTextureBindSlots = numBindSlots;
+    }
 private:
 
     void OutputExpressionList(HLSLExpression* expression);
     void OutputExpression(HLSLExpression* expression);
     void OutputArguments(HLSLArgument* argument);
+    void OutputOptionalSamplerArgument(HLSLArgument* argument);
     void OutputAttributes(int indent, HLSLAttribute* attribute);
     void OutputStatements(int indent, HLSLStatement* statement);
     void OutputDeclaration(HLSLDeclaration* declaration);
     void OutputDeclaration(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression* defaultValue = NULL);
     void OutputDeclarationType(const HLSLType& type);
     void OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression * assignment = NULL);
+    void OutputRegisterName(const char* registerName, HLSLRegisterType type);
 
     /** Generates a name of the format "base+n" where n is an integer such that the name
      * isn't used in the syntax tree. */
@@ -65,9 +82,19 @@ private:
 
     const HLSLTree* m_tree;
     const char*     m_entryName;
+    const char*     m_samplerPostfix;
+    const char*     m_texturePostfix;
     Target          m_target;
     bool            m_legacy;
     bool            m_isInsideBuffer;
+
+    const char* const*    m_constantBufferBindSlots;
+    int             m_numConstantBufferBindSlots;
+    const char* const*    m_textureBindSlots;
+    int             m_numTextureBindSlots;
+    const char* const*    m_RWTextureBindSlots;
+    int             m_numRWTextureBindSlots;
+
 
     char            m_tex2DFunction[64];
     char            m_tex2DLodFunction[64];

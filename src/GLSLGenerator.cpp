@@ -232,32 +232,6 @@ static const char* GetImageFormatQualifier(HLSLImageFormat format)
     return NULL;
 }
 
-static int GetElementCount(HLSLBaseType type)
-{
-    if (type == HLSLBaseType_Float ||
-        type == HLSLBaseType_Half ||
-        type == HLSLBaseType_Int ||
-        type == HLSLBaseType_Uint)
-        return 1;
-    if (type == HLSLBaseType_Float2 ||
-        type == HLSLBaseType_Half2 ||
-        type == HLSLBaseType_Int2 ||
-        type == HLSLBaseType_Uint2)
-        return 2;
-    if (type == HLSLBaseType_Float3 ||
-        type == HLSLBaseType_Half3 ||
-        type == HLSLBaseType_Int3 ||
-        type == HLSLBaseType_Uint3)
-        return 3;
-    if (type == HLSLBaseType_Float4 ||
-        type == HLSLBaseType_Half4 ||
-        type == HLSLBaseType_Int4 ||
-        type == HLSLBaseType_Uint4)
-        return 4;
-
-    return 0;
-}
-
 static bool GetCanImplicitCast(const HLSLType& srcType, const HLSLType& dstType)
 {
     return srcType.baseType == dstType.baseType;
@@ -302,6 +276,13 @@ GLSLGenerator::GLSLGenerator(Logger* logger) :
 	m_bvecTernary[ 0 ]			= 0;
     m_outputPosition            = false;
     m_outputTargets             = 0;
+
+    m_constantBufferBindSlots = NULL;
+    m_numConstantBufferBindSlots = 0;
+    m_textureBindSlots = NULL;
+    m_numTextureBindSlots = 0;
+    m_RWTextureBindSlots = NULL;
+    m_numRWTextureBindSlots = 0;
 }
 
 bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, const char* entryName, const Options& options, const char* customHeader)
@@ -556,7 +537,10 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
 
     if (expression->nodeType == HLSLNodeType_IdentifierExpression)
     {
-        OutputIdentifier(expression);
+        const HLSLIdentifierExpression* identifier = static_cast<const HLSLIdentifierExpression*>(expression);
+        // The identifier could be a GLSL reserved word (if it's not also a HLSL reserved word).
+        const char* name = GetSafeIdentifierName(identifier->name);
+        m_writer.Write(name);
     }
     else if (expression->nodeType == HLSLNodeType_ConstructorExpression)
     {
@@ -888,11 +872,7 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
 
         if (!handled)
         {
-            OutputIdentifier(expression);
-            m_writer.Write("(");
-            OutputExpressionList(functionCall->argument, functionCall->function->argument);
-            m_writer.Write(")");
-            OutputIdentifierPostfix(expression);
+            OutputFunctionCall(expression);
         }
     }
     else
@@ -921,109 +901,124 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
 
 }
 
-void GLSLGenerator::OutputIdentifier(const HLSLExpression* expression)
+void GLSLGenerator::OutputFunctionCall(const HLSLExpression* expression)
 {
-    const char* name = NULL;
-    if (expression->nodeType == HLSLNodeType_FunctionCall)
-    {
-        const HLSLFunctionCall* functionCall = static_cast<const HLSLFunctionCall*>(expression);
-        name = functionCall->function->name;
+    ASSERT(expression->nodeType == HLSLNodeType_FunctionCall);
 
-        // Remap intrinstic functions.
-        if (String_Equal(name, "TextureSample"))
-            name = "(texture";
-        else if (String_Equal(name, "TextureSampleLod"))
-            name = "(textureLod";
-        else if (String_Equal(name, "TextureSampleLodOffset"))
-            name = "(textureLodOffset";
-        else if (String_Equal(name, "TextureGather"))
-            name = "textureGather";
-        else if (String_Equal(name, "TextureFetch"))
-            name = "texelFetch";
-        else if (String_Equal(name, "TextureSize"))
-            name = "textureSize";
-        else if (String_Equal(name, "ImageLoad"))
-            name = "(imageLoad";
-        else if (String_Equal(name, "ImageStore"))
-            name = "imageStore";
-        else if (String_Equal(name, "ImageSize"))
-            name = "imageSize";
-        else if (String_Equal(name, "ImageAtomicExchange"))
-            name = "imageAtomicExchange";
-        else if (String_Equal(name, "ImageAtomicCompSwap"))
-            name = "imageAtomicCompSwap";
-        else if (String_Equal(name, "ImageAtomicAdd"))
-            name = "imageAtomicAdd";
-        else if (String_Equal(name, "ImageAtomicAnd"))
-            name = "imageAtomicAnd";
-        else if (String_Equal(name, "ImageAtomicOr"))
-            name = "imageAtomicOr";
-        else if (String_Equal(name, "ImageAtomicXor"))
-            name = "imageAtomicXor";
-        else if (String_Equal(name, "ImageAtomicMin"))
-            name = "imageAtomicMin";
-        else if (String_Equal(name, "ImageAtomicMax"))
-            name = "imageAtomicMax";
-        else if (String_Equal(name, "clip"))
-            name = m_clipFunction;
-        else if (String_Equal(name, "atan2"))
-            name = "atan";
-        else if (String_Equal(name, "sincos"))
-            name = m_sinCosFunction;
-        else if (String_Equal(name, "fmod"))
-            // mod is not the same as fmod if the parameter is negative!
-            // The equivalent of fmod(x, y) is x - y * floor(x/y)
-            // We use the mod version for performance.
-            name = "mod";
-        else if (String_Equal(name, "lerp"))
-            name = "mix";
-        else if (String_Equal(name, "frac"))
-            name = "fract";
-        else if (String_Equal(name, "ddx"))
-            name = "dFdx";
-        else if (String_Equal(name, "ddy"))
-            name = "dFdy";
-        else if (String_Equal(name, "rsqrt"))
-            name = "inversesqrt";
-    }
-    else if(expression->nodeType == HLSLNodeType_IdentifierExpression)
-    {
-        const HLSLIdentifierExpression* identifier = static_cast<const HLSLIdentifierExpression*>(expression);
-        // The identifier could be a GLSL reserved word (if it's not also a HLSL reserved word).
-        name = GetSafeIdentifierName(identifier->name);
-    }
-    m_writer.Write("%s", name);
-}
+    const HLSLFunctionCall* functionCall = static_cast<const HLSLFunctionCall*>(expression);
+    const char* origName = functionCall->function->name;
+    const char* name = origName;
 
-void GLSLGenerator::OutputIdentifierPostfix(const HLSLExpression* expression)
-{
-    const char* name = NULL;
+    // Remap intrinstic functions.
+    if (String_Equal(origName, "TextureSample"))
+        name = "(texture";
+    else if (String_Equal(origName, "TextureSampleLod"))
+        name = "(textureLod";
+    else if (String_Equal(origName, "TextureSampleLodOffset"))
+        name = "(textureLodOffset";
+    else if (String_Equal(origName, "TextureGather"))
+        name = "textureGather";
+    else if (String_Equal(origName, "TextureFetch"))
+        name = "texelFetch";
+    else if (String_Equal(origName, "TextureSize"))
+        name = "textureSize";
+    else if (String_Equal(origName, "ImageLoad"))
+        name = "(imageLoad";
+    else if (String_Equal(origName, "ImageStore"))
+    {
+        HLSLExpression* textureArgument = functionCall->argument;
+        HLSLExpression* coordinateArgument = textureArgument ? textureArgument->nextExpression : NULL;
+        HLSLExpression* valueArgument = coordinateArgument ? coordinateArgument->nextExpression : NULL;
+        ASSERT(valueArgument);
+        ASSERT(textureArgument->nodeType == HLSLNodeType_IdentifierExpression);
+
+        const char* textureName = ((HLSLIdentifierExpression*)textureArgument)->name;
+        int elem = GetElementCount(valueArgument->expressionType.baseType);
+
+        m_writer.Write("imageStore(%s, ", textureName);
+        OutputExpression(coordinateArgument);
+        m_writer.Write(", ");
+
+        if(elem != 4)
+            m_writer.Write("vec4(");
+        OutputExpression(valueArgument);
+        for (int i = elem; i < 4; ++i)
+            m_writer.Write(", 0");
+        if (elem != 4)
+            m_writer.Write(")");
+
+        m_writer.Write(")");
+        name = NULL;
+    }
+    else if (String_Equal(origName, "ImageSize"))
+        name = "imageSize";
+    else if (String_Equal(origName, "ImageAtomicExchange"))
+        name = "imageAtomicExchange";
+    else if (String_Equal(origName, "ImageAtomicCompSwap"))
+        name = "imageAtomicCompSwap";
+    else if (String_Equal(origName, "ImageAtomicAdd"))
+        name = "imageAtomicAdd";
+    else if (String_Equal(origName, "ImageAtomicAnd"))
+        name = "imageAtomicAnd";
+    else if (String_Equal(origName, "ImageAtomicOr"))
+        name = "imageAtomicOr";
+    else if (String_Equal(origName, "ImageAtomicXor"))
+        name = "imageAtomicXor";
+    else if (String_Equal(origName, "ImageAtomicMin"))
+        name = "imageAtomicMin";
+    else if (String_Equal(origName, "ImageAtomicMax"))
+        name = "imageAtomicMax";
+    else if (String_Equal(origName, "clip"))
+        name = m_clipFunction;
+    else if (String_Equal(origName, "atan2"))
+        name = "atan";
+    else if (String_Equal(origName, "sincos"))
+        name = m_sinCosFunction;
+    else if (String_Equal(origName, "fmod"))
+        // mod is not the same as fmod if the parameter is negative!
+        // The equivalent of fmod(x, y) is x - y * floor(x/y)
+        // We use the mod version for performance.
+        name = "mod";
+    else if (String_Equal(origName, "lerp"))
+        name = "mix";
+    else if (String_Equal(origName, "frac"))
+        name = "fract";
+    else if (String_Equal(origName, "ddx"))
+        name = "dFdx";
+    else if (String_Equal(origName, "ddy"))
+        name = "dFdy";
+    else if (String_Equal(origName, "rsqrt"))
+        name = "inversesqrt";
+
+    if (name != NULL)
+    {
+        m_writer.Write("%s(", name);
+        OutputExpressionList(functionCall->argument, functionCall->function->argument);
+        m_writer.Write(")");
+    }
+
     const char* postfix = NULL;
-    if (expression->nodeType == HLSLNodeType_FunctionCall)
+
+    if (String_Equal(origName, "TextureSample") ||
+        String_Equal(origName, "TextureSampleLod") ||
+        String_Equal(origName, "TextureSampleLodOffset") ||
+        String_Equal(origName, "ImageLoad"))
     {
-        const HLSLFunctionCall* functionCall = static_cast<const HLSLFunctionCall*>(expression);
-        name = functionCall->function->name;
-        if (String_Equal(name, "TextureSample") || 
-            String_Equal(name, "TextureSampleLod") ||
-            String_Equal(name, "TextureSampleLodOffset") ||
-            String_Equal(name, "ImageLoad"))
+        if (functionCall->argument && (IsReadTextureType(functionCall->argument->expressionType) || IsWriteTextureType(functionCall->argument->expressionType)))
         {
-            if (functionCall->argument && (IsReadTextureType(functionCall->argument->expressionType) || IsWriteTextureType(functionCall->argument->expressionType)))
-            {
-                int elemCount = GetElementCount(functionCall->argument->expressionType.samplerType);
-                if (elemCount == 1)
-                    postfix = ".r";
-                else if (elemCount == 2)
-                    postfix = ".rg";
-                else if (elemCount == 3)
-                    postfix = ".rgb";
-                else
-                    postfix = "";
-            }
+            int elemCount = GetElementCount(functionCall->argument->expressionType.samplerType);
+            if (elemCount == 1)
+                postfix = ".r";
+            else if (elemCount == 2)
+                postfix = ".rg";
+            else if (elemCount == 3)
+                postfix = ".rgb";
+            else
+                postfix = "";
         }
     }
 
-    if(postfix != NULL)
+    if (postfix != NULL)
         m_writer.Write("%s)", postfix);
 }
 
@@ -1262,7 +1257,7 @@ void GLSLGenerator::OutputBuffer(int indent, HLSLBuffer* buffer)
     }
     m_writer.WriteLine(indent, "};");
 
-    int registerIndex = MapRegisterNameToIndex(buffer->registerName);
+    int registerIndex = MapRegisterNameToIndex(buffer->registerName, HLSLRegister_ConstantBuffer);
     m_writer.WriteLine(indent, "layout (binding = %d, std140) uniform %s%s {", registerIndex, m_options.constantBufferPrefix, buffer->name);
     m_writer.WriteLine(indent + 1, "%sType %s;", buffer->name, buffer->name);
     m_writer.WriteLine(indent, "};");
@@ -1640,13 +1635,62 @@ const char* GLSLGenerator::GetAttribQualifier(AttributeModifier modifier)
     }
 }
 
-int GLSLGenerator::MapRegisterNameToIndex(const char* registerName) const
+int GLSLGenerator::MapRegisterNameToIndex(const char* registerName, HLSLRegisterType registerType) const
 {
-    if (strncmp(registerName, "ConstantBuffer", 14) == 0)
-        return atoi(registerName + 14);
-    else
-        Error("Undefined register use %s", registerName);
+    if (registerName == NULL)
+        return -1;
 
+    if (registerType == HLSLRegisterType::HLSLRegister_ConstantBuffer)
+    {
+        for (int i = 0; i < m_numConstantBufferBindSlots; ++i)
+        {
+            if (String_Equal(registerName, m_constantBufferBindSlots[i]))
+            {
+                return i;
+            }
+        }
+
+        if (strncmp(registerName, "ConstantBuffer", 14) == 0)
+        {
+            return atoi(registerName + 14);
+        }
+        else
+            m_logger->LogError("Undefined register use %s", registerName);
+    }
+    else if (registerType == HLSLRegister_ShaderResource || registerType == HLSLRegister_Sampler)
+    {
+        for (int i = 0; i < m_numTextureBindSlots; ++i)
+        {
+            if (String_Equal(registerName, m_textureBindSlots[i]))
+            {
+                return i;
+            }
+        }
+
+        if (strncmp(registerName, "Texture", 7) == 0)
+        {
+            return atoi(registerName + 7);
+        }
+        else
+            m_logger->LogError("Undefined register use %s", registerName);
+    }
+    else if (registerType == HLSLRegister_UnorderedAccess)
+    {
+        for (int i = 0; i < m_numRWTextureBindSlots; ++i)
+        {
+            if (String_Equal(registerName, m_RWTextureBindSlots[i]))
+            {
+                return i;
+            }
+        }
+
+        if (strncmp(registerName, "RWTexture", 9) == 0)
+        {
+            return atoi(registerName + 9);
+        }
+        else
+            m_logger->LogError("Undefined register use %s", registerName);
+    }
     return -1;
 }
 
@@ -1941,20 +1985,19 @@ void GLSLGenerator::OutputQualifier(const char* registerName, const HLSLType& ty
 {
     int bindPoint = -1;
     const char* imageQualifier = NULL;
-    const char* bindPointPrefix = NULL;
 
+    HLSLRegisterType registerType = HLSLRegister_ShaderResource;
     if (IsReadTextureType(type.baseType))
     {
-        bindPointPrefix = "Texture";
+        registerType = HLSLRegister_ShaderResource;
     }
     else if (IsWriteTextureType(type.baseType))
     {
         imageQualifier = GetImageFormatQualifier(type.imageFormat);
-        bindPointPrefix = "RWTexture";
+        registerType = HLSLRegister_UnorderedAccess;
     }
 
-    if (bindPointPrefix != NULL && registerName != NULL && strncmp(bindPointPrefix, registerName, strlen(bindPointPrefix)) == 0)
-        bindPoint = atoi(registerName + strlen(bindPointPrefix));
+    bindPoint = MapRegisterNameToIndex(registerName, registerType);
 
     int qualifierCount = bindPoint != -1 ? 1 : 0;
 

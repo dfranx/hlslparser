@@ -62,6 +62,9 @@ static const char* GetBaseTypeName(const HLSLBaseType& type, const char* userDef
     case HLSLBaseType_Texture1DArray:   return "Texture1DArray";
     case HLSLBaseType_Texture2DArray:   return "Texture2DArray";
     case HLSLBaseType_Texture2DMSArray: return "Texture2DMSArray";
+    case HLSLBaseType_RWTexture1D: return "RWTexture1D";
+    case HLSLBaseType_RWTexture2D: return "RWTexture2D";
+    case HLSLBaseType_RWTexture3D: return "RWTexture3D";
     case HLSLBaseType_UserDefined:      return userDefined;
     default: return "<unknown type>";
     }
@@ -111,6 +114,14 @@ HLSLGenerator::HLSLGenerator(Logger* logger)
     m_texCubeFunction[0]            = 0;
     m_texCubeLodFunction[0]         = 0;
     m_texCubeBiasFunction[0]        = 0;
+    m_samplerPostfix                = "_sampler";
+    m_texturePostfix                = "_texture";
+    m_constantBufferBindSlots       = NULL;
+    m_numConstantBufferBindSlots    = 0;
+    m_textureBindSlots              = NULL;
+    m_numTextureBindSlots           = 0;
+    m_RWTextureBindSlots            = NULL;
+    m_numRWTextureBindSlots         = 0;
 }
 
 
@@ -267,13 +278,14 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryNam
 
     if (!m_legacy)
     {        
-        /*
-        if (m_tree->GetContainsString("tex2Dlod"))
+        if (m_tree->GetContainsString("ImageSize"))
         {
-            m_writer.WriteLine(0, "float4 %s(%s ts, float4 texCoord, int2 offset=0) {", m_tex2DLodFunction, m_textureSampler2DStruct);
-            m_writer.WriteLine(1, "return ts.t.SampleLevel(ts.s, texCoord.xy, texCoord.w, offset);");
-            m_writer.WriteLine(0, "}");
+            m_writer.WriteLine(0, "int2 ImageSize(RWTexture2D<float> img) { int2 dims; img.GetDimensions(dims.x, dims.y); return dims; }");
+            m_writer.WriteLine(0, "int2 ImageSize(RWTexture2D<float2> img) { int2 dims; img.GetDimensions(dims.x, dims.y); return dims; }");
+            m_writer.WriteLine(0, "int2 ImageSize(RWTexture2D<float3> img) { int2 dims; img.GetDimensions(dims.x, dims.y); return dims; }");
+            m_writer.WriteLine(0, "int2 ImageSize(RWTexture2D<float4> img) { int2 dims; img.GetDimensions(dims.x, dims.y); return dims; }");
         }
+        /*
         if (m_tree->GetContainsString("tex2Dgather"))
         {
             m_writer.WriteLine(0, "float4 %s(%s ts, float2 texCoord, int component, int2 offset=0) {", m_tex2DGatherFunction, m_textureSampler2DStruct);
@@ -397,47 +409,15 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     {
         HLSLIdentifierExpression* identifierExpression = static_cast<HLSLIdentifierExpression*>(expression);
         const char* name = identifierExpression->name;
-        if (!m_legacy && IsReadTextureType(identifierExpression->expressionType) && identifierExpression->global)
+        if (!m_legacy && IsReadTextureType(identifierExpression->expressionType)/* && identifierExpression->global*/)
         {
             const char* samplerType = GetBaseTypeName(identifierExpression->expressionType.samplerType);
-            int samplerCount = identifierExpression->expressionType.sampleCount;
 
-            if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture1D)
-            {
-                m_writer.Write("Texture1D<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2D)
-            {
-                m_writer.Write("Texture2D<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture3D)
-            {
-                m_writer.Write("Texture3D<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_TextureCube)
-            {
-                m_writer.Write("TextureCube<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_TextureCubeArray)
-            {
-                m_writer.Write("TextureCubeArray<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMS)
-            {
-                m_writer.Write("Texture2DMS<%s, %d> %s_texture, SamplerState %s_sampler", samplerType, samplerCount, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture1DArray)
-            {
-                m_writer.Write("Texture1DArray<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DArray)
-            {
-                m_writer.Write("Texture2DArray<%s> %s_texture, SamplerState %s_sampler", samplerType, name, name);
-            }
-            else if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMSArray)
-            {
+            if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMS ||
+                identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMSArray)
                 m_writer.Write("%s", name);
-            }
+            else
+                m_writer.Write("%s%s, %s%s", name, m_texturePostfix, name, m_samplerPostfix);
         }
         else
         {
@@ -582,74 +562,115 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         const char* name = functionCall->function->name;
         if (!m_legacy)
         {
-            if (String_Equal(name, "tex2D"))
+            if (String_Equal(name, "TextureSample"))
             {
-                name = m_tex2DFunction;
+                HLSLExpression* textureArgument = functionCall->argument;
+                HLSLExpression* coordinateArgument = textureArgument ? textureArgument->nextExpression : NULL;
+                ASSERT(coordinateArgument);
+                ASSERT(textureArgument->nodeType == HLSLNodeType_IdentifierExpression);
+                ASSERT(samplerArgument->nodeType == HLSLNodeType_IdentifierExpression);
+
+                const char* textureName = ((HLSLIdentifierExpression*)textureArgument)->name;
+                m_writer.Write("%s%s.Sample(%s%s, ", textureName, m_texturePostfix, textureName, m_samplerPostfix);
+                OutputExpression(coordinateArgument);
+                m_writer.Write(")");
+
+                int elemCount = GetElementCount(textureArgument->expressionType.samplerType);
+                if (elemCount == 1)
+                    m_writer.Write(".r");
+                else if (elemCount == 2)
+                    m_writer.Write(".rg");
+                else if (elemCount == 3)
+                    m_writer.Write(".rgb");
+
+                name = NULL;
             }
-            else if (String_Equal(name, "tex2Dlod"))
+            else if (String_Equal(name, "TextureSampleLod"))
             {
-                name = m_tex2DLodFunction;
+                HLSLExpression* textureArgument = functionCall->argument;
+                HLSLExpression* coordinateArgument = textureArgument ? textureArgument->nextExpression : NULL;
+                HLSLExpression* lodArgument = coordinateArgument ? coordinateArgument->nextExpression : NULL;
+
+                ASSERT(lodArgument);
+                ASSERT(textureArgument->nodeType == HLSLNodeType_IdentifierExpression);
+                ASSERT(samplerArgument->nodeType == HLSLNodeType_IdentifierExpression);
+
+                const char* textureName = ((HLSLIdentifierExpression*)textureArgument)->name;
+                m_writer.Write("%s%s.SampleLevel(%s%s, ", textureName, m_texturePostfix, textureName, m_samplerPostfix);
+                OutputExpression(coordinateArgument);
+                m_writer.Write(", ");
+                OutputExpression(lodArgument);
+                m_writer.Write(")");
+
+                name = NULL;
             }
-            else if (String_Equal(name, "tex2Dgather"))
-            {
+            else if (String_Equal(name, "TextureSampleLodOffset"))
+                name = m_tex2DBiasFunction;
+            else if (String_Equal(name, "TextureGather"))
                 name = m_tex2DGatherFunction;
-            }
-            else if (String_Equal(name, "tex2Dsize"))
-            {
-                name = m_tex2DSizeFunction;
-            }
-            else if (String_Equal(name, "tex2Dfetch"))
-            {
+            else if (String_Equal(name, "TextureFetch"))
                 name = m_tex2DFetchFunction;
-            }
-            else if (String_Equal(name, "tex2Dcmp"))
+            else if (String_Equal(name, "TextureSize"))
+                name = m_tex2DSizeFunction;
+            else if (String_Equal(name, "ImageLoad"))
             {
-                name = m_tex2DCmpFunction;
+                HLSLExpression* textureArgument = functionCall->argument;
+                HLSLExpression* coordinateArgument = textureArgument ? textureArgument->nextExpression : NULL;
+
+                ASSERT(coordinateArgument);
+                ASSERT(textureArgument->nodeType == HLSLNodeType_IdentifierExpression);
+
+                const char* textureName = ((HLSLIdentifierExpression*)textureArgument)->name;
+                m_writer.Write("%s.Load(", textureName);
+                OutputExpression(coordinateArgument);
+                m_writer.Write(")");
+
+                name = NULL;
             }
-            else if (String_Equal(name, "tex2DMSfetch"))
+            else if (String_Equal(name, "ImageStore"))
             {
-                name = m_tex2DMSFetchFunction;
+                HLSLExpression* textureArgument = functionCall->argument;
+                HLSLExpression* coordinateArgument = textureArgument ? textureArgument->nextExpression : NULL;
+                HLSLExpression* valueArgument = coordinateArgument ? coordinateArgument->nextExpression : NULL;
+                ASSERT(valueArgument);
+                ASSERT(textureArgument->nodeType == HLSLNodeType_IdentifierExpression);
+
+                const char* textureName = ((HLSLIdentifierExpression*)textureArgument)->name;
+                m_writer.Write("%s[", textureName);
+                OutputExpression(coordinateArgument);
+                m_writer.Write("] = ");
+                OutputExpression(valueArgument);
+
+                name = NULL;
             }
-            else if (String_Equal(name, "tex2DMSsize"))
+            else if (String_Equal(name, "ImageSize"))
             {
-                name = m_tex2DMSSizeFunction;
+                name = "ImageSize";
             }
-            else if (String_Equal(name, "tex3D"))
-            {
-                name = m_tex3DFunction;
-            }
-            else if (String_Equal(name, "tex3Dlod"))
-            {
-                name = m_tex3DLodFunction;
-            }
-            else if (String_Equal(name, "tex3Dbias"))
-            {
-                name = m_tex3DBiasFunction;
-            }
-            else if (String_Equal(name, "tex3Dsize"))
-            {
-                name = m_tex3DSizeFunction;
-            }
-            else if (String_Equal(name, "texCUBE"))
-            {
-                name = m_texCubeFunction;
-            }
-            else if (String_Equal(name, "texCUBElod"))
-            {
-                name = m_texCubeLodFunction;
-            }
-            else if (String_Equal(name, "texCUBEbias"))
-            {
-                name = m_texCubeBiasFunction;
-            }
-            else if (String_Equal(name, "texCUBEsize"))
-            {
-                name = m_texCubeSizeFunction;
-            }
+            else if (String_Equal(name, "ImageAtomicExchange"))
+                name = "imageAtomicExchange";
+            else if (String_Equal(name, "ImageAtomicCompSwap"))
+                name = "imageAtomicCompSwap";
+            else if (String_Equal(name, "ImageAtomicAdd"))
+                name = "imageAtomicAdd";
+            else if (String_Equal(name, "ImageAtomicAnd"))
+                name = "imageAtomicAnd";
+            else if (String_Equal(name, "ImageAtomicOr"))
+                name = "imageAtomicOr";
+            else if (String_Equal(name, "ImageAtomicXor"))
+                name = "imageAtomicXor";
+            else if (String_Equal(name, "ImageAtomicMin"))
+                name = "imageAtomicMin";
+            else if (String_Equal(name, "ImageAtomicMax"))
+                name = "imageAtomicMax";
         }
-        m_writer.Write("%s(", name);
-        OutputExpressionList(functionCall->argument);
-        m_writer.Write(")");
+
+        if (name)
+        {
+            m_writer.Write("%s(", name);
+            OutputExpressionList(functionCall->argument);
+            m_writer.Write(")");
+        }
     }
     else
     {
@@ -688,8 +709,17 @@ void HLSLGenerator::OutputArguments(HLSLArgument* argument)
         const char * semantic = argument->sv_semantic ? argument->sv_semantic : argument->semantic;
 
         OutputDeclaration(argument->type, argument->name, semantic, /*registerName=*/NULL, argument->defaultValue);
+        OutputOptionalSamplerArgument(argument);
         argument = argument->nextArgument;
         ++numArgs;
+    }
+}
+
+void HLSLGenerator::OutputOptionalSamplerArgument(HLSLArgument* argument)
+{
+    if (IsReadTextureType(argument->type))
+    {
+        m_writer.Write(", SamplerState %s%s", argument->name, m_samplerPostfix);
     }
 }
 
@@ -810,10 +840,8 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
 
                 m_writer.BeginLine(indent, buffer->fileName, buffer->line);
                 m_writer.Write("cbuffer cb_%s", buffer->name);
-                if (buffer->registerName != NULL)
-                {
-                    m_writer.Write(" : register(%s)", buffer->registerName);
-                }
+                OutputRegisterName(buffer->registerName, HLSLRegister_ConstantBuffer);
+
                 m_writer.EndLine(" {");
                 m_writer.WriteLine(indent + 1, "%sType %s;", buffer->name, buffer->name);
                 m_writer.WriteLine(indent, "};");
@@ -836,7 +864,7 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             }
             else if (IsReadTextureType(function->returnType))
             {
-                m_writer.Write("%s<%s> %s(", returnTypeName, samplerTypeName, functionName);
+                m_writer.Write("%s %s(", returnTypeName, functionName);
             }
             else
             {
@@ -952,12 +980,6 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
     if (!m_legacy && isReadTextureType)
     {
-        int reg = -1;
-        if (declaration->registerName != NULL)
-        {
-            sscanf(declaration->registerName, "s%d", &reg);
-        }
-
         const char* textureType = GetTypeName(declaration->type);
         const char* samplerType = "SamplerState";
         // @@ Handle generic sampler type.
@@ -974,25 +996,15 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
         if (samplerType != NULL)
         {
-            if (reg != -1)
-            {
-                m_writer.Write("%s<%s> %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, GetBaseTypeName(declaration->type.samplerType), declaration->type.sampleCount, declaration->name, reg, samplerType, declaration->name, reg);
-            }
-            else
-            {
-                m_writer.Write("%s<%s> %s_texture; %s %s_sampler", textureType, GetBaseTypeName(declaration->type.samplerType), declaration->name, samplerType, declaration->name);
-            }
+            m_writer.Write("%s<%s> %s%s", textureType, GetBaseTypeName(declaration->type.samplerType), declaration->name, m_texturePostfix);
+            OutputRegisterName(declaration->registerName, HLSLRegister_ShaderResource);
+            m_writer.Write("; %s %s%s", samplerType, declaration->name, m_samplerPostfix);
+            OutputRegisterName(declaration->registerName, HLSLRegister_Sampler);
         }
         else
         {
-            if (reg != -1)
-            {
-                m_writer.Write("%s %s : register(t%d)", textureType, declaration->name, reg);
-            }
-            else
-            {
-                m_writer.Write("%s %s", textureType, declaration->name);
-            }
+            m_writer.Write("%s %s", textureType, declaration->name);
+            OutputRegisterName(declaration->registerName, HLSLRegister_ShaderResource);
         }
         return;
     }
@@ -1043,15 +1055,22 @@ void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
         m_writer.Write("sample ");
     }
 
-    if (!m_legacy && IsReadTextureType(type))
+    if (!m_legacy && (IsReadTextureType(type) || IsWriteTextureType(type)))
     {
-        if (IsMultisampledTexture(type.baseType))
+        if (IsReadTextureType(type))
         {
-            m_writer.Write("%s<%s, %d> ", typeName, GetBaseTypeName(type.samplerType), type.sampleCount);
+            if (IsMultisampledTexture(type.baseType))
+            {
+                m_writer.Write("%s<%s, %d> ", typeName, GetBaseTypeName(type.samplerType), type.sampleCount);
+            }
+            else
+            {
+                m_writer.Write("%s<%s> ", typeName, GetBaseTypeName(type.samplerType));
+            }
         }
-        else
+        else if (IsWriteTextureType(type))
         {
-            m_writer.Write("%s<%s> ", typeName, GetBaseTypeName(type.samplerType));
+                m_writer.Write("%s<%s> ", typeName, GetBaseTypeName(type.samplerType));
         }
     }
     else
@@ -1062,7 +1081,10 @@ void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
 
 void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic/*=NULL*/, const char* registerName/*=NULL*/, HLSLExpression * assignment/*=NULL*/)
 {
-    m_writer.Write("%s", name);
+    if (IsReadTextureType(type))
+        m_writer.Write("%s%s", name, m_texturePostfix);
+    else
+        m_writer.Write("%s", name);
 
     if (type.array)
     {
@@ -1088,7 +1110,18 @@ void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name
         }
         else 
         {
-            m_writer.Write(" : register(%s)", registerName);
+            if (IsReadTextureType(type))
+            {
+                OutputRegisterName(registerName, HLSLRegister_ShaderResource);
+            }
+            else if (IsWriteTextureType(type))
+            {
+                OutputRegisterName(registerName, HLSLRegister_UnorderedAccess);
+            }
+            else
+            {
+                m_writer.Write(" : register(%s)", registerName);
+            }
         }
     }
 
@@ -1105,6 +1138,65 @@ void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name
         {
             OutputExpression(assignment);
         }
+    }
+}
+
+void HLSLGenerator::OutputRegisterName(const char* registerName, HLSLRegisterType type)
+{
+    if (registerName == NULL)
+        return;
+
+    int registerIndex = -1;
+    if (type == HLSLRegisterType::HLSLRegister_ConstantBuffer)
+    {
+        for (int i = 0; i < m_numConstantBufferBindSlots; ++i)
+        {
+            if (String_Equal(registerName, m_constantBufferBindSlots[i]))
+            {
+                registerIndex = i; break;
+            }
+        }
+
+        if (registerIndex == -1)
+        {
+            if (strncmp(registerName, "ConstantBuffer", 14) == 0)
+            {
+                registerIndex = atoi(registerName + 14);
+            }
+            else
+                m_logger->LogError("Undefined register use %s", registerName);
+        }
+
+        m_writer.Write(" : register(b%d)", registerIndex);
+    }
+    else if (type == HLSLRegister_ShaderResource || type == HLSLRegister_Sampler)
+    {
+        for (int i = 0; i < m_numTextureBindSlots; ++i)
+        {
+            if (String_Equal(registerName, m_textureBindSlots[i]))
+            {
+                registerIndex = i; break;
+            }
+        }
+
+        if (registerIndex == -1)
+        {
+            if (strncmp(registerName, "Texture", 7) == 0)
+            {
+                registerIndex = atoi(registerName + 7);
+            }
+            else
+                m_logger->LogError("Undefined register use %s", registerName);
+        }
+
+        if (type == HLSLRegister_ShaderResource)
+            m_writer.Write(" : register(t%d)", registerIndex);
+        else
+            m_writer.Write(" : register(s%d)", registerIndex);
+    }
+    else if (type == HLSLRegister_UnorderedAccess)
+    {
+
     }
 }
 
