@@ -82,6 +82,7 @@ private:
     {
         AttributeModifier_In,
         AttributeModifier_Out,
+        AttributeModifier_Count,
     };
 
     void OutputExpressionList(HLSLExpression* expression, HLSLArgument* argument = NULL);
@@ -171,7 +172,8 @@ private:
     char                m_scalarSwizzle3Function[64];
     char                m_scalarSwizzle4Function[64];
     char                m_sinCosFunction[64];
-	char                m_bvecTernary[ 64 ];
+    char                m_bvecTernary[64];
+    int                 m_attributeCounts[AttributeModifier_Count];
 
     mutable bool                m_error;
 

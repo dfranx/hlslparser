@@ -283,6 +283,8 @@ GLSLGenerator::GLSLGenerator(Logger* logger) :
     m_numTextureBindSlots = 0;
     m_RWTextureBindSlots = NULL;
     m_numRWTextureBindSlots = 0;
+    m_attributeCounts[0] = 0;
+    m_attributeCounts[1] = 0;
 }
 
 bool GLSLGenerator::Generate(HLSLTree* tree, Target target, Version version, const char* entryName, const Options& options, const char* customHeader)
@@ -1711,7 +1713,7 @@ void GLSLGenerator::OutputAttribute(const HLSLType& type, const char* semantic, 
         {
             if (field->semantic != NULL && GetBuiltInSemantic(field->semantic, modifier) == NULL)
             {
-                m_writer.Write( "%s ", qualifier );
+                m_writer.Write("layout(location=%d) %s ", m_attributeCounts[modifier]++, qualifier);
 				char attribName[ 64 ];
 				String_Printf( attribName, 64, "%s%s", prefix, field->semantic );
 				OutputDeclaration( field->type, attribName );
@@ -1722,7 +1724,7 @@ void GLSLGenerator::OutputAttribute(const HLSLType& type, const char* semantic, 
     }
     else if (semantic != NULL && GetBuiltInSemantic(semantic, modifier) == NULL)
     {
-		m_writer.Write( "%s ", qualifier );
+		m_writer.Write( "layout(location=%d) %s ", m_attributeCounts[modifier]++, qualifier );
 		char attribName[ 64 ];
 		String_Printf( attribName, 64, "%s%s", prefix, semantic );
 		OutputDeclaration( type, attribName );
