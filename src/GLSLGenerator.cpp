@@ -53,7 +53,7 @@ static bool IsUintVectorType(const HLSLBaseType& type)
     return type == HLSLBaseType_Uint || type == HLSLBaseType_Uint2 || type == HLSLBaseType_Uint3 || type == HLSLBaseType_Uint4;
 }
 
-static const char* GetTypeName(const HLSLType& type)
+static const char* GLSLGetTypeName(const HLSLType& type)
 {
     switch (type.baseType)
     {
@@ -237,7 +237,7 @@ static bool GetCanImplicitCast(const HLSLType& srcType, const HLSLType& dstType)
     return srcType.baseType == dstType.baseType;
 }
 
-static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
+static int GLSLGetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
 {
     HLSLExpression* argument = functionCall->argument;
     int numArguments = 0;
@@ -547,7 +547,7 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
     else if (expression->nodeType == HLSLNodeType_ConstructorExpression)
     {
         HLSLConstructorExpression* constructorExpression = static_cast<HLSLConstructorExpression*>(expression);
-        m_writer.Write("%s(", GetTypeName(constructorExpression->type));
+        m_writer.Write("%s(", GLSLGetTypeName(constructorExpression->type));
         OutputExpressionList(constructorExpression->argument);
         m_writer.Write(")");
     }
@@ -827,7 +827,7 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
         if (String_Equal(functionName, "mul"))
         {
             HLSLExpression* argument[2];
-            if (GetFunctionArguments(functionCall, argument, 2) != 2)
+            if (GLSLGetFunctionArguments(functionCall, argument, 2) != 2)
             {
                 Error("mul expects 2 arguments");
                 return;
@@ -861,7 +861,7 @@ void GLSLGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
         else if (String_Equal(functionName, "saturate"))
         {
             HLSLExpression* argument[1];
-            if (GetFunctionArguments(functionCall, argument, 1) != 1)
+            if (GLSLGetFunctionArguments(functionCall, argument, 1) != 1)
             {
                 Error("saturate expects 1 argument");
                 return;
@@ -1108,7 +1108,7 @@ void GLSLGenerator::OutputStatements(int indent, HLSLStatement* statement, const
             // Use an alternate name for the function which is supposed to be entry point
             // so that we can supply our own function which will be the actual entry point.
             const char* functionName   = GetSafeIdentifierName(function->name);
-            const char* returnTypeName = GetTypeName(function->returnType);
+            const char* returnTypeName = GLSLGetTypeName(function->returnType);
 
             m_writer.BeginLine(indent, function->fileName, function->line);
             m_writer.Write("%s %s(", returnTypeName, functionName);
@@ -1343,7 +1343,7 @@ void GLSLGenerator::LayoutBufferElement(const HLSLType& type, unsigned int& offs
     }
     else
     {
-        Error("Constant buffer layout is not supported for %s", GetTypeName(type));
+        Error("Constant buffer layout is not supported for %s", GLSLGetTypeName(type));
     }
 }
 
@@ -1379,7 +1379,7 @@ void GLSLGenerator::LayoutBufferAlign(const HLSLType& type, unsigned int& offset
     }
     else
     {
-        Error("Constant buffer layout is not supported for %s", GetTypeName(type));
+        Error("Constant buffer layout is not supported for %s", GLSLGetTypeName(type));
     }
 }
 
@@ -1486,7 +1486,7 @@ void GLSLGenerator::OutputBufferAccessExpression(HLSLBuffer* buffer, HLSLExpress
     }
     else
     {
-        Error("Constant buffer layout is not supported for %s", GetTypeName(type));
+        Error("Constant buffer layout is not supported for %s", GLSLGetTypeName(type));
     }
 }
 
@@ -1864,7 +1864,7 @@ void GLSLGenerator::OutputEntryCaller(HLSLFunction* entryFunction)
     // Call the original entry function.
     m_writer.BeginLine(1);
     if (entryFunction->returnType.baseType != HLSLBaseType_Void)
-        m_writer.Write("%s %s = ", GetTypeName(entryFunction->returnType), resultName);
+        m_writer.Write("%s %s = ", GLSLGetTypeName(entryFunction->returnType), resultName);
     m_writer.Write("%s(", m_entryName);
 
     int numArgs = 0;
@@ -1935,7 +1935,7 @@ void GLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration, bool uniform
 			m_writer.Write( " = " );
 			if( declaration->type.array )
 			{
-				m_writer.Write( "%s[]( ", GetTypeName( declaration->type ) );
+				m_writer.Write( "%s[]( ", GLSLGetTypeName( declaration->type ) );
 				OutputExpressionList( declaration->assignment );
 				m_writer.Write( " )" );
 			}
@@ -1963,7 +1963,7 @@ void GLSLGenerator::OutputDeclarationType( const HLSLType& type )
 		m_writer.Write("const ");
 	}
 
-	m_writer.Write( "%s ", GetTypeName( type ) );
+	m_writer.Write( "%s ", GLSLGetTypeName( type ) );
 }
 
 void GLSLGenerator::OutputDeclarationBody( const HLSLType& type, const char* name )

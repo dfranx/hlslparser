@@ -18,7 +18,7 @@
 namespace M4
 {
 
-static const char* GetBaseTypeName(const HLSLBaseType& type, const char* userDefined = NULL)
+static const char* HLSLGetBaseTypeName(const HLSLBaseType& type, const char* userDefined = NULL)
 {
     switch (type)
     {
@@ -70,25 +70,9 @@ static const char* GetBaseTypeName(const HLSLBaseType& type, const char* userDef
     }
 }
 
-static const char* GetTypeName(const HLSLType& type)
+static const char* HLSLGetTypeName(const HLSLType& type)
 {
-    return GetBaseTypeName(type.baseType, type.typeName);
-}
-
-static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
-{
-    HLSLExpression* argument = functionCall->argument;
-    int numArguments = 0;
-    while (argument != NULL)
-    {
-        if (numArguments < maxArguments)
-        {
-            expression[numArguments] = argument;
-        }
-        argument = argument->nextExpression;
-        ++numArguments;
-    }
-    return numArguments;
+    return HLSLGetBaseTypeName(type.baseType, type.typeName);
 }
 
 HLSLGenerator::HLSLGenerator(Logger* logger)
@@ -411,7 +395,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         const char* name = identifierExpression->name;
         if (!m_legacy && IsReadTextureType(identifierExpression->expressionType)/* && identifierExpression->global*/)
         {
-            const char* samplerType = GetBaseTypeName(identifierExpression->expressionType.samplerType);
+            const char* samplerType = HLSLGetBaseTypeName(identifierExpression->expressionType.samplerType);
 
             if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMS ||
                 identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMSArray)
@@ -437,8 +421,8 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     {
         HLSLConstructorExpression* constructorExpression = static_cast<HLSLConstructorExpression*>(expression);
         if(IsReadTextureType(constructorExpression->type))
-            m_logger->LogError("Texture type %s is not constructable", GetTypeName(constructorExpression->type));
-        m_writer.Write("%s(", GetTypeName(constructorExpression->type));
+            m_logger->LogError("Texture type %s is not constructable", HLSLGetTypeName(constructorExpression->type));
+        m_writer.Write("%s(", HLSLGetTypeName(constructorExpression->type));
         OutputExpressionList(constructorExpression->argument);
         m_writer.Write(")");
     }
@@ -854,8 +838,8 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             // Use an alternate name for the function which is supposed to be entry point
             // so that we can supply our own function which will be the actual entry point.
             const char* functionName   = function->name;
-            const char* returnTypeName = GetTypeName(function->returnType);
-            const char* samplerTypeName = GetBaseTypeName(function->returnType.samplerType);
+            const char* returnTypeName = HLSLGetTypeName(function->returnType);
+            const char* samplerTypeName = HLSLGetBaseTypeName(function->returnType.samplerType);
 
             m_writer.BeginLine(indent, function->fileName, function->line);
             if (IsMultisampledTexture(function->returnType.baseType))
@@ -980,7 +964,7 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
     if (!m_legacy && isReadTextureType)
     {
-        const char* textureType = GetTypeName(declaration->type);
+        const char* textureType = HLSLGetTypeName(declaration->type);
         const char* samplerType = "SamplerState";
         // @@ Handle generic sampler type.
 
@@ -996,7 +980,7 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
         if (samplerType != NULL)
         {
-            m_writer.Write("%s<%s> %s%s", textureType, GetBaseTypeName(declaration->type.samplerType), declaration->name, m_texturePostfix);
+            m_writer.Write("%s<%s> %s%s", textureType, HLSLGetBaseTypeName(declaration->type.samplerType), declaration->name, m_texturePostfix);
             OutputRegisterName(declaration->registerName, HLSLRegister_ShaderResource);
             m_writer.Write("; %s %s%s", samplerType, declaration->name, m_samplerPostfix);
             OutputRegisterName(declaration->registerName, HLSLRegister_Sampler);
@@ -1022,7 +1006,7 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
 void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
 {
-    const char* typeName = GetTypeName(type);
+    const char* typeName = HLSLGetTypeName(type);
 
     if (type.flags & HLSLTypeFlag_Const)
     {
@@ -1061,16 +1045,16 @@ void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
         {
             if (IsMultisampledTexture(type.baseType))
             {
-                m_writer.Write("%s<%s, %d> ", typeName, GetBaseTypeName(type.samplerType), type.sampleCount);
+                m_writer.Write("%s<%s, %d> ", typeName, HLSLGetBaseTypeName(type.samplerType), type.sampleCount);
             }
             else
             {
-                m_writer.Write("%s<%s> ", typeName, GetBaseTypeName(type.samplerType));
+                m_writer.Write("%s<%s> ", typeName, HLSLGetBaseTypeName(type.samplerType));
             }
         }
         else if (IsWriteTextureType(type))
         {
-                m_writer.Write("%s<%s> ", typeName, GetBaseTypeName(type.samplerType));
+                m_writer.Write("%s<%s> ", typeName, HLSLGetBaseTypeName(type.samplerType));
         }
     }
     else
