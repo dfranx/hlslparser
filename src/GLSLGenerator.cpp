@@ -991,6 +991,23 @@ void GLSLGenerator::OutputFunctionCall(const HLSLExpression* expression)
         name = "dFdy";
     else if (String_Equal(origName, "rsqrt"))
         name = "inversesqrt";
+    else if (String_Equal(origName, "asfloat"))
+    {
+        if (functionCall->argument->expressionType.baseType == HLSLBaseType_Int)
+            name = "intBitsToFloat";
+        else if (functionCall->argument->expressionType.baseType == HLSLBaseType_Uint)
+            name = "uintBitsToFloat";
+    }
+    else if (String_Equal(origName, "asuint"))
+    {
+        if (functionCall->argument->expressionType.baseType == HLSLBaseType_Float)
+            name = "floatBitsToUint";
+    }
+    else if (String_Equal(origName, "asint"))
+    {
+        if (functionCall->argument->expressionType.baseType == HLSLBaseType_Float)
+            name = "floatBitsToInt";
+    }
 
     if (name != NULL)
     {

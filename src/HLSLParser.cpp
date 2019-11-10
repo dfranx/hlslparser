@@ -528,9 +528,11 @@ const Intrinsic _intrinsic[] =
 
 		INTRINSIC_FLOAT1_FUNCTION("isnan"),
 		INTRINSIC_FLOAT1_FUNCTION("isinf"),
-
+            
 		Intrinsic("asuint",    HLSLBaseType_Uint, HLSLBaseType_Float),
+		Intrinsic("asint",    HLSLBaseType_Int, HLSLBaseType_Float),
         Intrinsic("asfloat", HLSLBaseType_Float, HLSLBaseType_Uint),
+        Intrinsic("asfloat", HLSLBaseType_Float, HLSLBaseType_Int),
 
         SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture1D, HLSLBaseType_Float),
         SAMPLING_INTRINSIC_FUNCTION_ARG1("TextureSample", HLSLBaseType_Texture2D, HLSLBaseType_Float2),
