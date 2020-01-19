@@ -18,13 +18,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -72,7 +72,6 @@
     <ClCompile Include="src\HLSLTokenizer.cpp" />
     <ClCompile Include="src\HLSLTree.cpp" />
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\MSLGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CodeWriter.h" />
@@ -82,7 +81,6 @@
     <ClInclude Include="src\HLSLParser.h" />
     <ClInclude Include="src\HLSLTokenizer.h" />
     <ClInclude Include="src\HLSLTree.h" />
-    <ClInclude Include="src\MSLGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

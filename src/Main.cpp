@@ -95,60 +95,11 @@ int main( int argc, char* argv[] )
 	using namespace M4;
 
 	// Parse arguments
-	const char* fileName = NULL;
-	const char* entryName = NULL;
+	const char* fileName = "Debug/SimpleVS.hlsl";
+	const char* entryName = "main";
 
-	Target target = Target_FragmentShader;
-	Language language = Language_GLSL;
-
-	for( int argn = 1; argn < argc; ++argn )
-	{
-		const char* const arg = argv[ argn ];
-
-		if( String_Equal( arg, "-h" ) || String_Equal( arg, "--help" ) )
-		{
-			PrintUsage();
-			return 0;
-		}
-		else if( String_Equal( arg, "-fs" ) )
-		{
-			target = Target_FragmentShader;
-		}
-		else if( String_Equal( arg, "-vs" ) )
-		{
-			target = Target_VertexShader;
-		}
-		else if( String_Equal( arg, "-glsl" ) )
-		{
-			language = Language_GLSL;
-		}
-		else if( String_Equal( arg, "-hlsl" ) )
-		{
-			language = Language_HLSL;
-		}
-		else if( String_Equal( arg, "-legacyhlsl" ) )
-		{
-			language = Language_LegacyHLSL;
-		}
-		else if( String_Equal( arg, "-metal" ) )
-		{
-			language = Language_Metal;
-		}
-		else if( fileName == NULL )
-		{
-			fileName = arg;
-		}
-		else if( entryName == NULL )
-		{
-			entryName = arg;
-		}
-		else
-		{
-			LogError(NULL, "Too many arguments\n" );
-			PrintUsage();
-			return 1;
-		}
-	}
+	Target target = Target_VertexShader;
+	Language language = Language_HLSL;
 
 	if( fileName == NULL || entryName == NULL )
 	{
@@ -177,6 +128,7 @@ int main( int argc, char* argv[] )
 	if(!parser.Parse(&tree))
 	{
 		LogError(NULL, "Parsing failed, aborting\n" );
+		getchar();
 		return 1;
 	}
 
@@ -198,10 +150,12 @@ int main( int argc, char* argv[] )
 		if (!generator.Generate( &tree, HLSLGenerator::Target(target), entryName, language == Language_LegacyHLSL ))
 		{
 			LogError(NULL, "Translation failed, aborting\n" );
+			getchar();
 			return 1;
 		}
 
-		std::cout << generator.GetResult();
+		size_t len;
+		std::cout << generator.GetResult(len);
 	}
 
 	return 0;

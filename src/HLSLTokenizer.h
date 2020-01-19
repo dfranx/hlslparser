@@ -64,6 +64,7 @@ enum HLSLToken
     HLSLToken_Struct,
     HLSLToken_ConstantBuffer,
     HLSLToken_TextureBuffer,
+    HLSLToken_Register,
     HLSLToken_Return,
     HLSLToken_Continue,
     HLSLToken_Discard,

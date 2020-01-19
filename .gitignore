@@ -13,5 +13,6 @@
 /Release
 *.log
 *.sdf
+.vs
 *.opensdf
 /build
