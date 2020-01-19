@@ -1385,15 +1385,14 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
         // Optional register assignment.
         if (Accept(':'))
         {
-            if (Expect(HLSLToken_Register) && Expect('(')) {
-                if (!ExpectIdentifier(buffer->registerName))
-                {
-                    return false;
-                }
-                else if (!Expect(')'))
-                    return false;
-            }
-            else return false;
+            if (!Expect(HLSLToken_Register))
+                return false;
+            if (!Expect('('))
+                return false;
+            if (!ExpectIdentifier(buffer->registerName))
+                return false;
+            if (!Expect(')'))
+                return false;
             // TODO: Check that we aren't re-using a register.
         }
 
@@ -1520,10 +1519,14 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                     return false;
                 }
 
-                if (!AcceptIdentifier(declaration->registerName))
-                {
+                if (!Expect(HLSLToken_Register))
                     return false;
-                }
+                if (!Expect('('))
+                    return false;
+                if (!ExpectIdentifier(declaration->registerName))
+                    return false;
+                if (!Expect(')'))
+                    return false;
             }
             else if (IsWriteTextureType(type))
             {
@@ -3176,14 +3179,15 @@ bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/
         
         if (IsReadTextureType(type))
         {
-            if (!Expect('<'))
-                return false;
+            bool hasSampler = false;
+            if (Accept('<')) {
+                int token = m_tokenizer.GetToken();
+                type.samplerType = TokenToBaseType(token);
 
-            int token = m_tokenizer.GetToken();
-            type.samplerType = TokenToBaseType(token);
+                m_tokenizer.Next();
+                hasSampler = true;
+            }
 
-            m_tokenizer.Next();
-            
             if (IsMultisampledTexture(type.baseType))
             {
                 if (!Expect(','))
@@ -3198,7 +3202,7 @@ bool HLSLParser::AcceptType(bool allowVoid, HLSLType& type/*, bool acceptFlags*/
                     type.sampleCount = (unsigned char)sampleCount;
                 }
             }
-            if (!Expect('>'))
+            if (hasSampler && !Expect('>'))
                 return false;
         }
         else if (IsWriteTextureType(type))
@@ -3572,6 +3576,8 @@ bool HLSLParser::GetMemberType(const HLSLType& objectType, HLSLMemberAccess * me
         }
         return false;
     }
+
+    // TODO: method calls
 
     if (_baseTypeDescriptions[objectType.baseType].numericType == NumericType_NaN)
     {
