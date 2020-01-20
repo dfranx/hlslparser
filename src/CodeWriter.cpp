@@ -48,6 +48,8 @@ void CodeWriter::BeginLine(int indent, const char* fileName, int lineNumber)
             m_currentLine = lineNumber;
             outputLine = true;
         }
+        // TODO: delete this
+        outputLine = false;
         if (outputLine || outputFile)
         {
             char buffer[256];

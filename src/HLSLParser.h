@@ -82,7 +82,7 @@ private:
     bool ParseSamplerStateName(const EffectState *& state);
     bool ParseStateValue(const EffectState * state, HLSLStateAssignment* stateAssignment);
     bool ParseSamplerStateAssignment(HLSLStateAssignment*& stateAssignment);
-    bool ParseSamplerState(const char* registerName);
+    bool ParseSamplerState(const char*& registerName);
 
     bool ParseAttributeList(HLSLAttribute*& attribute);
     bool ParseAttributeBlock(HLSLAttribute*& attribute);

@@ -36,6 +36,7 @@ enum HLSLNodeType
     HLSLNodeType_IdentifierExpression,
     HLSLNodeType_ConstructorExpression,
     HLSLNodeType_MemberAccess,
+    HLSLNodeType_MethodCall,
     HLSLNodeType_ArrayAccess,
     HLSLNodeType_FunctionCall,
     HLSLNodeType_StateAssignment,
@@ -120,6 +121,7 @@ enum HLSLBaseType
     HLSLBaseType_RWTexture1D,
     HLSLBaseType_RWTexture2D,
     HLSLBaseType_RWTexture3D,
+    HLSLBaseType_SamplerState,
     HLSLBaseType_UserDefined,       // struct
     HLSLBaseType_Buffer, // ConstantBuffer, TextureBuffer
     HLSLBaseType_Expression,        // type argument for defined() sizeof() and typeof().
@@ -192,6 +194,11 @@ enum HLSLImageFormat
 
 extern const HLSLTypeDimension BaseTypeDimension[HLSLBaseType_Count];
 extern const HLSLBaseType ScalarBaseType[HLSLBaseType_Count];
+
+inline bool IsSampler(HLSLBaseType baseType)
+{
+    return baseType == HLSLBaseType_SamplerState;
+}
 
 inline bool IsReadTextureType(HLSLBaseType baseType)
 {
@@ -821,6 +828,23 @@ struct HLSLMemberAccess : public HLSLExpression
     bool                swizzle;
 };
 
+/** object.method(args) **/
+struct HLSLMethodCall : public HLSLExpression
+{
+    static const HLSLNodeType s_type = HLSLNodeType_MethodCall;
+    HLSLMethodCall()
+    {
+        object = NULL;
+        method = NULL;
+        argument = NULL;
+        numArguments = 0;
+    }
+    HLSLExpression* object;
+    const char* method;
+    HLSLExpression* argument;
+    int numArguments;
+};
+
 /** array[index] **/
 struct HLSLArrayAccess : public HLSLExpression
 {
@@ -983,7 +1007,8 @@ public:
     virtual void VisitLiteralExpression(HLSLLiteralExpression * node);
     virtual void VisitIdentifierExpression(HLSLIdentifierExpression * node);
     virtual void VisitConstructorExpression(HLSLConstructorExpression * node);
-    virtual void VisitMemberAccess(HLSLMemberAccess * node);
+    virtual void VisitMemberAccess(HLSLMemberAccess* node);
+    virtual void VisitMethodCall(HLSLMethodCall* node);
     virtual void VisitArrayAccess(HLSLArrayAccess * node);
     virtual void VisitFunctionCall(HLSLFunctionCall * node);
     virtual void VisitStateAssignment(HLSLStateAssignment * node);

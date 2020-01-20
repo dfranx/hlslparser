@@ -709,6 +709,7 @@ const BaseTypeDescription _baseTypeDescriptions[HLSLBaseType_Count] =
         { "RWTexture1D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture1D
         { "RWTexture2D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture2D
         { "RWTexture3D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture3D
+        { "SamplerState",        NumericType_NaN,        1, 0, 0, -1 },     // HLSLBaseType_SamplerState
     };
 
 // IC: I'm not sure this table is right, but any errors should be caught by the backend compiler.
@@ -1565,9 +1566,10 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                 return false;
             }
 
-            if (IsReadTextureType(type) && !ParseSamplerState(declaration->registerName))
+            if (IsSampler(type.baseType))
             {
-                return false;
+                if (!ParseSamplerState(declaration->registerName))
+                    return false;
             }
 
             // TODO: Multiple variables declared on one line.
@@ -2020,7 +2022,8 @@ bool HLSLParser::ParseExpression(HLSLExpression*& expression)
         // However, for our usage of the types it should be sufficient.
         binaryExpression->expressionType = expression->expressionType;
 
-        if (!CheckTypeCast(expression2->expressionType, expression->expressionType))
+        // TODO: expressionType for method calls
+        if (expression2->nodeType != HLSLNodeType_MethodCall && !CheckTypeCast(expression2->expressionType, expression->expressionType))
         {
             const char* srcTypeName = GetTypeName(expression2->expressionType);
             const char* dstTypeName = GetTypeName(expression->expressionType);
@@ -2446,21 +2449,43 @@ bool HLSLParser::ParseTerminalExpression(HLSLExpression*& expression, bool& need
             done = false;
         }
 
-        // Member access operator.
+        // member access / method call
         while (Accept('.'))
         {
-            HLSLMemberAccess* memberAccess = m_tree->AddNode<HLSLMemberAccess>(fileName, line);
-            memberAccess->object = expression;
-            if (!ExpectIdentifier(memberAccess->field))
+            // read the identifier (Position, Sample(), etc...)
+            const char* memberAccessFieldName = "";
+            if (!ExpectIdentifier(memberAccessFieldName))
             {
                 return false;
             }
-            if (!GetMemberType( expression->expressionType, memberAccess))
-            {
-                m_tokenizer.Error("Couldn't access '%s'", memberAccess->field);
-                return false;
+
+            // method call
+            if (Accept('(')) {
+                HLSLMethodCall* methodCall = m_tree->AddNode<HLSLMethodCall>(fileName, line);
+                methodCall->object = expression;
+                methodCall->method = memberAccessFieldName;
+
+                if (!ParseExpressionList(')', false, methodCall->argument, methodCall->numArguments))
+                {
+                    return false;
+                }
+
+                expression = methodCall;
             }
-            expression = memberAccess;
+            // member access
+            else {
+                HLSLMemberAccess* memberAccess = m_tree->AddNode<HLSLMemberAccess>(fileName, line);
+                memberAccess->object = expression;
+                memberAccess->field = memberAccessFieldName;
+
+                if (!GetMemberType(expression->expressionType, memberAccess))
+                {
+                    m_tokenizer.Error("Couldn't access '%s'", memberAccess->field);
+                    return false;
+                }
+                expression = memberAccess;
+            }
+
             done = false;
         }
 
@@ -2684,11 +2709,12 @@ bool HLSLParser::ParseArgumentList(HLSLArgument*& firstArgument, int& numArgumen
 }
 
 
-bool HLSLParser::ParseSamplerState(const char* registerName)
+bool HLSLParser::ParseSamplerState(const char*& registerName)
 {
     const char* fileName = GetFileName();
     int         line     = GetLineNumber();
-    
+
+
     if (Accept('{'))
     {
         HLSLSamplerState* samplerState = m_tree->AddNode<HLSLSamplerState>(fileName, line);
@@ -2719,8 +2745,19 @@ bool HLSLParser::ParseSamplerState(const char* registerName)
             lastStateAssignment = stateAssignment;
             samplerState->numStateAssignments++;
         }
-        //TODO save sampler to list
     }
+    else if (Accept(':')) {
+        if (!Expect(HLSLToken_Register))
+            return false;
+        if (!Expect('('))
+            return false;
+        if (!ExpectIdentifier(registerName))
+            return false;
+        if (!Expect(')'))
+            return false;
+    }
+
+    //TODO save sampler to list
 
     return true;
 }
@@ -3077,6 +3114,7 @@ HLSLBaseType HLSLParser::TokenToBaseType(int token)
     case HLSLToken_RWTexture1D: return HLSLBaseType_RWTexture1D;
     case HLSLToken_RWTexture2D: return HLSLBaseType_RWTexture2D;
     case HLSLToken_RWTexture3D: return HLSLBaseType_RWTexture3D;
+    case HLSLToken_SamplerState: return HLSLBaseType_SamplerState;
     default: return HLSLBaseType_Void;
     }
 }

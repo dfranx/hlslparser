@@ -58,6 +58,7 @@ static const char* _reservedWords[] =
         "RWTexture1D",
         "RWTexture2D",
         "RWTexture3D",
+        "SamplerState",
         "if",
         "else",
         "for",

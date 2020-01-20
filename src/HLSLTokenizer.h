@@ -51,6 +51,7 @@ enum HLSLToken
     HLSLToken_RWTexture1D,
     HLSLToken_RWTexture2D,
     HLSLToken_RWTexture3D,
+    HLSLToken_SamplerState,
 
     // Reserved words.
     HLSLToken_If,

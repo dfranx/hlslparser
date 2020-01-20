@@ -158,5 +158,6 @@ int main( int argc, char* argv[] )
 		std::cout << generator.GetResult(len);
 	}
 
+	getchar();
 	return 0;
 }

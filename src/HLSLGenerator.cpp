@@ -65,6 +65,7 @@ static const char* HLSLGetBaseTypeName(const HLSLBaseType& type, const char* use
     case HLSLBaseType_RWTexture1D: return "RWTexture1D";
     case HLSLBaseType_RWTexture2D: return "RWTexture2D";
     case HLSLBaseType_RWTexture3D: return "RWTexture3D";
+    case HLSLBaseType_SamplerState:    return "SamplerState";
     case HLSLBaseType_UserDefined:      return userDefined;
     default: return "<unknown type>";
     }
@@ -397,11 +398,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         {
             const char* samplerType = HLSLGetBaseTypeName(identifierExpression->expressionType.samplerType);
 
-            if (identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMS ||
-                identifierExpression->expressionType.baseType == HLSLBaseType_Texture2DMSArray)
-                m_writer.Write("%s", name);
-            else
-                m_writer.Write("%s%s, %s%s", name, m_texturePostfix, name, m_samplerPostfix);
+            m_writer.Write("%s", name);
         }
         else
         {
@@ -528,9 +525,16 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     else if (expression->nodeType == HLSLNodeType_MemberAccess)
     {
         HLSLMemberAccess* memberAccess = static_cast<HLSLMemberAccess*>(expression);
-        m_writer.Write("(");
         OutputExpression(memberAccess->object);
-        m_writer.Write(").%s", memberAccess->field);
+        m_writer.Write(".%s", memberAccess->field);
+    }
+    else if (expression->nodeType == HLSLNodeType_MethodCall)
+    {
+        HLSLMethodCall* methodCall = static_cast<HLSLMethodCall*>(expression);
+        OutputExpression(methodCall->object);
+        m_writer.Write(".%s(", methodCall->method);
+        OutputExpressionList(methodCall->argument);
+        m_writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_ArrayAccess)
     {
@@ -980,10 +984,8 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
         if (samplerType != NULL)
         {
-            m_writer.Write("%s<%s> %s%s", textureType, HLSLGetBaseTypeName(declaration->type.samplerType), declaration->name, m_texturePostfix);
+            m_writer.Write("%s<%s> %s", textureType, HLSLGetBaseTypeName(declaration->type.samplerType), declaration->name);
             OutputRegisterName(declaration->registerName, HLSLRegister_ShaderResource);
-            m_writer.Write("; %s %s%s", samplerType, declaration->name, m_samplerPostfix);
-            OutputRegisterName(declaration->registerName, HLSLRegister_Sampler);
         }
         else
         {
@@ -1065,10 +1067,7 @@ void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
 
 void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic/*=NULL*/, const char* registerName/*=NULL*/, HLSLExpression * assignment/*=NULL*/)
 {
-    if (IsReadTextureType(type))
-        m_writer.Write("%s%s", name, m_texturePostfix);
-    else
-        m_writer.Write("%s", name);
+    m_writer.Write("%s", name);
 
     if (type.array)
     {

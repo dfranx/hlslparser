@@ -811,6 +811,9 @@ void HLSLTreeVisitor::VisitExpression(HLSLExpression * node)
     else if (node->nodeType == HLSLNodeType_MemberAccess) {
         VisitMemberAccess((HLSLMemberAccess *)node);
     }
+    else if (node->nodeType == HLSLNodeType_MethodCall) {
+        VisitMethodCall((HLSLMethodCall*)node);
+    }
     else if (node->nodeType == HLSLNodeType_ArrayAccess) {
         VisitArrayAccess((HLSLArrayAccess *)node);
     }
@@ -902,6 +905,15 @@ void HLSLTreeVisitor::VisitConstructorExpression(HLSLConstructorExpression * nod
 void HLSLTreeVisitor::VisitMemberAccess(HLSLMemberAccess * node)
 {
     VisitExpression(node->object);
+}
+void HLSLTreeVisitor::VisitMethodCall(HLSLMethodCall* node)
+{
+    VisitExpression(node->object);
+    HLSLExpression* argument = node->argument;
+    while (argument != NULL) {
+        VisitExpression(argument);
+        argument = argument->nextExpression;
+    }
 }
 
 void HLSLTreeVisitor::VisitArrayAccess(HLSLArrayAccess * node)
@@ -1367,6 +1379,18 @@ bool NeedsFlattening(HLSLExpression * expr, int level = 0) {
     else if (expr->nodeType == HLSLNodeType_MemberAccess) {
         return NeedsFlattening(expr->nextExpression, level+1);
     }
+    else if (expr->nodeType == HLSLNodeType_MethodCall) {
+        HLSLMethodCall* methodCall = (HLSLMethodCall*)expr;
+        /*
+        TODO: output arguments in methods
+        if (functionCall->function->numOutputArguments > 0) {
+            if (level > 0) {
+                return true;
+            }
+        }
+        */
+        return NeedsFlattening(methodCall->argument, level + 1) || NeedsFlattening(expr->nextExpression, level);
+    }
     else if (expr->nodeType == HLSLNodeType_ArrayAccess) {
         HLSLArrayAccess * arrayAccess = (HLSLArrayAccess *)expr;
         return NeedsFlattening(arrayAccess->array, level+1) || NeedsFlattening(arrayAccess->index, level+1) || NeedsFlattening(expr->nextExpression, level);
@@ -1654,6 +1678,16 @@ struct StatementList {
             }
             else if (expr->nodeType == HLSLNodeType_MemberAccess) {
                 assert(false);
+            }
+            else if (expr->nodeType == HLSLNodeType_MethodCall) {
+                HLSLMethodCall* methodCall = (HLSLMethodCall*)expr;
+
+                // TODO: ?
+                // @@ Output function as is?
+                // @@ We have to flatten function arguments! This is tricky, need to handle input/output arguments.
+                assert(!NeedsFlattening(methodCall->argument));
+
+                return AddExpressionStatement(expr, statements, wantIdent);
             }
             else if (expr->nodeType == HLSLNodeType_ArrayAccess) {
                 assert(false);
