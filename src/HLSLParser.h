@@ -107,6 +107,7 @@ private:
     
     /** Finds the overloaded function that matches the specified call. */
     const HLSLFunction* MatchFunctionCall(const HLSLFunctionCall* functionCall, const char* name);
+    const HLSLFunction* MatchMethodCall(const HLSLMethodCall* functionCall, const char* name);
 
     /** Gets the type of the named field on the specified object type (fieldName can also specify a swizzle. ) */
     bool GetMemberType(const HLSLType& objectType, HLSLMemberAccess * memberAccess);

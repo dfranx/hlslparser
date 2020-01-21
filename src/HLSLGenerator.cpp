@@ -532,7 +532,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     {
         HLSLMethodCall* methodCall = static_cast<HLSLMethodCall*>(expression);
         OutputExpression(methodCall->object);
-        m_writer.Write(".%s(", methodCall->method);
+        m_writer.Write(".%s(", methodCall->function->name);
         OutputExpressionList(methodCall->argument);
         m_writer.Write(")");
     }
