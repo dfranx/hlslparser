@@ -15,6 +15,8 @@
 #include "HLSLTokenizer.h"
 #include "HLSLTree.h"
 
+#include <string>
+
 namespace M4
 {
 
@@ -28,6 +30,12 @@ public:
     HLSLParser(Allocator* allocator, Logger* logger, const char* fileName, const char* buffer, size_t length);
 
     bool Parse(HLSLTree* tree);
+
+    void DeclareVariable(const char* name, const HLSLType& type);
+    static HLSLBaseType GetTypeFromString(const std::string& name);
+
+    inline void DeclareFunction(HLSLFunction* func) { m_functions.PushBack(func); }
+    inline void DeclareStructure(HLSLStruct* str) { m_userTypes.PushBack(str); }
 
     static HLSLBaseType TokenToBaseType(int token);
 private:
@@ -93,9 +101,7 @@ private:
 
     void BeginScope();
     void EndScope();
-
-    void DeclareVariable(const char* name, const HLSLType& type);
-
+    
     /** Returned pointer is only valid until Declare or Begin/EndScope is called. */
     const HLSLType* FindVariable(const char* name, bool& global) const;
 

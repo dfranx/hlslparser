@@ -1108,6 +1108,14 @@ bool HLSLParser::Accept(int token)
 	return false;
 }
 
+HLSLBaseType HLSLParser::GetTypeFromString(const std::string& name)
+{
+	HLSLBaseType type = TokenToBaseType(M4::HLSLTokenizer::GetTokenID(name.c_str()));
+	if (type == HLSLBaseType_Void && name != "void")
+		return HLSLBaseType_UserDefined;
+	return type;
+}
+
 bool HLSLParser::Accept(const char* token)
 {
 	if (m_tokenizer.GetToken() == HLSLToken_Identifier && String_Equal( token, m_tokenizer.GetIdentifier() ) )
@@ -1358,6 +1366,12 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
 			}
 
 			const HLSLFunction* declaration = FindFunction(function);
+
+			// function semantics
+			if (Accept(':')) {
+				if (!AcceptIdentifier(function->semantic))
+					return false;
+			}
 
 			// Forward declaration
 			if (Accept(';'))
@@ -1727,11 +1741,14 @@ bool HLSLParser::ParseStatement(HLSLStatement*& statement, const HLSLType& retur
 			return false;
 		}
 		// Check that the return expression can be cast to the return type of the function.
+		/*
+		Don't check if the return statement expression type matches with function return type
 		HLSLType voidType(HLSLBaseType_Void);
 		if (!CheckTypeCast(returnStatement->expression ? returnStatement->expression->expressionType : voidType, returnType))
 		{
 			return false;
 		}
+		*/
 
 		statement = returnStatement;
 		return Expect(';');
@@ -3248,7 +3265,7 @@ const HLSLStruct* HLSLParser::FindUserDefinedType(const char* name) const
 	// string pool.
 	for (int i = 0; i < m_userTypes.GetSize(); ++i)
 	{
-		if (m_userTypes[i]->name == name)
+		if (String_Equal(m_userTypes[i]->name, name))
 		{
 			return m_userTypes[i];
 		}
@@ -3300,7 +3317,10 @@ const HLSLType* HLSLParser::FindVariable(const char* name, bool& global) const
 {
 	for (int i = m_variables.GetSize() - 1; i >= 0; --i)
 	{
-		if (m_variables[i].name == name)
+		if (m_variables[i].name == nullptr)
+			continue;
+
+		if (String_Equal(m_variables[i].name, name))
 		{
 			global = (i < m_numGlobals);
 			return &m_variables[i].type;
@@ -3376,7 +3396,7 @@ bool HLSLParser::GetIsFunction(const char* name) const
 	for (int i = 0; i < m_functions.GetSize(); ++i)
 	{
 		// == is ok here because we're passed the strings through the string pool.
-		if (m_functions[i]->name == name)
+		if (String_Equal(m_functions[i]->name, name))
 		{
 			return true;
 		}
@@ -3416,7 +3436,7 @@ const HLSLFunction* HLSLParser::MatchFunctionCall(const HLSLFunctionCall* functi
 	for (int i = 0; i < m_functions.GetSize(); ++i)
 	{
 		const HLSLFunction* function = m_functions[i];
-		if (function->name == name)
+		if (String_Equal(function->name, name))
 		{
 			nameMatches = true;
 			
@@ -3532,7 +3552,7 @@ bool HLSLParser::GetMemberType(const HLSLType& objectType, HLSLMemberAccess * me
 		const HLSLStructField* field = structure->field;
 		while (field != NULL)
 		{
-			if (field->name == fieldName)
+			if (String_Equal(field->name, fieldName))
 			{
 				memberAccess->expressionType = field->type;
 				return true;

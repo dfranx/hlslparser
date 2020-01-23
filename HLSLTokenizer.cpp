@@ -164,6 +164,14 @@ HLSLTokenizer::HLSLTokenizer(Logger* logger, const char* fileName, const char* b
     m_error             = false;
     Next();
 }
+int HLSLTokenizer::GetTokenID(const char* name)
+{
+    const int numReservedWords = sizeof(_reservedWords) / sizeof(const char*);
+    for (int i = 0; i < numReservedWords; ++i)
+        if (strcmp(_reservedWords[i], name) == 0)
+            return 256 + i;
+    return 0;
+}
 
 void HLSLTokenizer::Next()
 {

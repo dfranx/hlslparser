@@ -159,6 +159,9 @@ public:
     /** Advances to the next token in the stream. */
     void Next();
 
+    /** Get token ID from the string */
+    static int GetTokenID(const char* name);
+
     /** Returns the current token in the stream. */
     int GetToken() const;
 
