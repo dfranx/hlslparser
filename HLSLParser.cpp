@@ -288,6 +288,16 @@ struct BaseTypeDescription
 };
 
 
+#define INTRINSIC_INT1_FUNCTION(name) \
+		Intrinsic( name, HLSLBaseType_Int,   HLSLBaseType_Int  ),   \
+		Intrinsic( name, HLSLBaseType_Int2,  HLSLBaseType_Int2 ),   \
+		Intrinsic( name, HLSLBaseType_Int3,  HLSLBaseType_Int3 ),   \
+		Intrinsic( name, HLSLBaseType_Int4,  HLSLBaseType_Int4 ),   \
+		Intrinsic( name, HLSLBaseType_Uint,    HLSLBaseType_Uint   ),   \
+		Intrinsic( name, HLSLBaseType_Uint2,   HLSLBaseType_Uint2  ),   \
+		Intrinsic( name, HLSLBaseType_Uint3,   HLSLBaseType_Uint3  ),   \
+		Intrinsic( name, HLSLBaseType_Uint4,   HLSLBaseType_Uint4  )
+
 #define INTRINSIC_FLOAT1_FUNCTION(name) \
 		Intrinsic( name, HLSLBaseType_Float,   HLSLBaseType_Float  ),   \
 		Intrinsic( name, HLSLBaseType_Float2,  HLSLBaseType_Float2 ),   \
@@ -357,7 +367,13 @@ struct BaseTypeDescription
 const Intrinsic _intrinsic[] =
 {
 	INTRINSIC_FLOAT1_FUNCTION( "abs" ),
+	INTRINSIC_INT1_FUNCTION("abs"),
 	INTRINSIC_FLOAT1_FUNCTION( "acos" ),
+	INTRINSIC_FLOAT1_FUNCTION("asfloat"),
+	INTRINSIC_INT1_FUNCTION("asfloat"),
+	INTRINSIC_INT1_FUNCTION("countbits"),
+	INTRINSIC_INT1_FUNCTION("firstbithigh"),
+	INTRINSIC_INT1_FUNCTION("firstbitlow"),
 
 	Intrinsic( "any", HLSLBaseType_Bool, HLSLBaseType_Float ),
 	Intrinsic( "any", HLSLBaseType_Bool, HLSLBaseType_Float2 ),
@@ -387,20 +403,61 @@ const Intrinsic _intrinsic[] =
 	Intrinsic( "any", HLSLBaseType_Bool, HLSLBaseType_Uint3 ),
 	Intrinsic( "any", HLSLBaseType_Bool, HLSLBaseType_Uint4 ),
 
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float4),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float2x2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float3x3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float4x4),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float4x3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Float4x2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half4),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half2x2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half3x3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half4x4),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half4x3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Half4x2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Bool),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Int),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Int2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Int3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Int4),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Uint),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Uint2),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Uint3),
+	Intrinsic("all", HLSLBaseType_Bool, HLSLBaseType_Uint4),
+
 	INTRINSIC_FLOAT1_FUNCTION( "asin" ),
 	INTRINSIC_FLOAT1_FUNCTION( "atan" ),
 	INTRINSIC_FLOAT2_FUNCTION( "atan2" ),
 	INTRINSIC_FLOAT3_FUNCTION( "clamp" ),
-	INTRINSIC_FLOAT1_FUNCTION( "cos" ),
+	INTRINSIC_FLOAT1_FUNCTION("cos"),
+	INTRINSIC_FLOAT1_FUNCTION("cosh"),
+	INTRINSIC_FLOAT1_FUNCTION("sinh"),
+	INTRINSIC_FLOAT1_FUNCTION("tanh"),
+	INTRINSIC_FLOAT1_FUNCTION("degrees"),
+	INTRINSIC_FLOAT1_FUNCTION("radians"),
 
 	INTRINSIC_FLOAT3_FUNCTION( "lerp" ),
 	INTRINSIC_FLOAT3_FUNCTION( "smoothstep" ),
 
 	INTRINSIC_FLOAT1_FUNCTION( "floor" ),
+	INTRINSIC_FLOAT1_FUNCTION("round"),
 	INTRINSIC_FLOAT1_FUNCTION( "ceil" ),
 	INTRINSIC_FLOAT1_FUNCTION( "frac" ),
+	INTRINSIC_FLOAT1_FUNCTION("exp"),
+	INTRINSIC_FLOAT1_FUNCTION("exp2"),
+	INTRINSIC_FLOAT1_FUNCTION("trunc"),
 
 	INTRINSIC_FLOAT2_FUNCTION( "fmod" ),
+	INTRINSIC_FLOAT3_FUNCTION("fma"),
+	INTRINSIC_FLOAT1_FUNCTION("fwidth"),
+
+	Intrinsic("abort", HLSLBaseType_Void),
 
 	Intrinsic( "clip", HLSLBaseType_Void,  HLSLBaseType_Float    ),
 	Intrinsic( "clip", HLSLBaseType_Void,  HLSLBaseType_Float2   ),
@@ -422,6 +479,13 @@ const Intrinsic _intrinsic[] =
 
 	Intrinsic( "cross", HLSLBaseType_Float3,  HLSLBaseType_Float3,  HLSLBaseType_Float3 ),
 
+	Intrinsic("distance", HLSLBaseType_Float,  HLSLBaseType_Float2,  HLSLBaseType_Float2),
+	Intrinsic("distance", HLSLBaseType_Float,  HLSLBaseType_Float3,  HLSLBaseType_Float3),
+	Intrinsic("distance", HLSLBaseType_Float,  HLSLBaseType_Float4,  HLSLBaseType_Float4),
+	Intrinsic("distance", HLSLBaseType_Half,   HLSLBaseType_Half2,   HLSLBaseType_Half2),
+	Intrinsic("distance", HLSLBaseType_Half,   HLSLBaseType_Half3,   HLSLBaseType_Half3),
+	Intrinsic("distance", HLSLBaseType_Half,   HLSLBaseType_Half4,   HLSLBaseType_Half4),
+
 	Intrinsic( "length", HLSLBaseType_Float,  HLSLBaseType_Float  ),
 	Intrinsic( "length", HLSLBaseType_Float,  HLSLBaseType_Float2 ),
 	Intrinsic( "length", HLSLBaseType_Float,  HLSLBaseType_Float3 ),
@@ -433,6 +497,38 @@ const Intrinsic _intrinsic[] =
 
 	INTRINSIC_FLOAT2_FUNCTION( "max" ),
 	INTRINSIC_FLOAT2_FUNCTION( "min" ),
+
+	Intrinsic("modf", HLSLBaseType_Float,    HLSLBaseType_Float, HLSLBaseType_Int),
+	Intrinsic("modf", HLSLBaseType_Float2,   HLSLBaseType_Float2, HLSLBaseType_Int2),
+	Intrinsic("modf", HLSLBaseType_Float3,   HLSLBaseType_Float3, HLSLBaseType_Int3),
+	Intrinsic("modf", HLSLBaseType_Float4,   HLSLBaseType_Float4, HLSLBaseType_Int4),
+
+	Intrinsic("asint", HLSLBaseType_Int, HLSLBaseType_Float),
+	Intrinsic("asint", HLSLBaseType_Int2, HLSLBaseType_Float2),
+	Intrinsic("asint", HLSLBaseType_Int3, HLSLBaseType_Float3),
+	Intrinsic("asint", HLSLBaseType_Int4, HLSLBaseType_Float4),
+	Intrinsic("asint", HLSLBaseType_Int, HLSLBaseType_Uint),
+	Intrinsic("asint", HLSLBaseType_Int2, HLSLBaseType_Uint2),
+	Intrinsic("asint", HLSLBaseType_Int3, HLSLBaseType_Uint3),
+	Intrinsic("asint", HLSLBaseType_Int4, HLSLBaseType_Uint4),
+
+	Intrinsic("asuint", HLSLBaseType_Uint, HLSLBaseType_Float),
+	Intrinsic("asuint", HLSLBaseType_Uint2, HLSLBaseType_Float2),
+	Intrinsic("asuint", HLSLBaseType_Uint3, HLSLBaseType_Float3),
+	Intrinsic("asuint", HLSLBaseType_Uint4, HLSLBaseType_Float4),
+	Intrinsic("asuint", HLSLBaseType_Uint, HLSLBaseType_Int),
+	Intrinsic("asuint", HLSLBaseType_Uint2, HLSLBaseType_Int2),
+	Intrinsic("asuint", HLSLBaseType_Uint3, HLSLBaseType_Int3),
+	Intrinsic("asuint", HLSLBaseType_Uint4, HLSLBaseType_Int4),
+
+	Intrinsic("asfloat", HLSLBaseType_Float, HLSLBaseType_Int),
+	Intrinsic("asfloat", HLSLBaseType_Float2, HLSLBaseType_Int2),
+	Intrinsic("asfloat", HLSLBaseType_Float3, HLSLBaseType_Int3),
+	Intrinsic("asfloat", HLSLBaseType_Float4, HLSLBaseType_Int4),
+	Intrinsic("asfloat", HLSLBaseType_Float, HLSLBaseType_Uint),
+	Intrinsic("asfloat", HLSLBaseType_Float2, HLSLBaseType_Uint2),
+	Intrinsic("asfloat", HLSLBaseType_Float3, HLSLBaseType_Uint3),
+	Intrinsic("asfloat", HLSLBaseType_Float4, HLSLBaseType_Uint4),
 
 	// @@ Add all combinations.
 	// scalar = mul(scalar, scalar)
@@ -460,6 +556,14 @@ const Intrinsic _intrinsic[] =
 	Intrinsic( "transpose", HLSLBaseType_Half3x3, HLSLBaseType_Half3x3 ),
 	Intrinsic( "transpose", HLSLBaseType_Half4x4, HLSLBaseType_Half4x4 ),
 
+	Intrinsic("determinant", HLSLBaseType_Float, HLSLBaseType_Float2x2),
+	Intrinsic("determinant", HLSLBaseType_Float, HLSLBaseType_Float3x3),
+	Intrinsic("determinant", HLSLBaseType_Float, HLSLBaseType_Float4x4),
+	Intrinsic("determinant", HLSLBaseType_Half, HLSLBaseType_Half2x2),
+	Intrinsic("determinant", HLSLBaseType_Half, HLSLBaseType_Half3x3),
+	Intrinsic("determinant", HLSLBaseType_Half, HLSLBaseType_Half4x4),
+
+	INTRINSIC_FLOAT3_FUNCTION("faceforward"),
 	INTRINSIC_FLOAT1_FUNCTION( "normalize" ),
 	INTRINSIC_FLOAT2_FUNCTION( "pow" ),
 	INTRINSIC_FLOAT1_FUNCTION( "saturate" ),
@@ -470,17 +574,25 @@ const Intrinsic _intrinsic[] =
 	INTRINSIC_FLOAT1_FUNCTION( "exp" ),
 	INTRINSIC_FLOAT1_FUNCTION( "exp2" ),
 	INTRINSIC_FLOAT1_FUNCTION( "log" ),
-	INTRINSIC_FLOAT1_FUNCTION( "log2" ),
+		INTRINSIC_FLOAT1_FUNCTION("log2"),
+		INTRINSIC_FLOAT1_FUNCTION("log10"),
+		INTRINSIC_FLOAT2_FUNCTION("frexp"),
+		INTRINSIC_FLOAT2_FUNCTION("ldexp"),
 		
 	INTRINSIC_FLOAT1_FUNCTION( "ddx" ),
 	INTRINSIC_FLOAT1_FUNCTION( "ddy" ),
+	INTRINSIC_FLOAT1_FUNCTION("ddx_coarse"),
+	INTRINSIC_FLOAT1_FUNCTION("ddy_coarse"),
+	INTRINSIC_FLOAT1_FUNCTION("ddx_fine"),
+	INTRINSIC_FLOAT1_FUNCTION("ddy_fine"),
 		
 	INTRINSIC_FLOAT1_FUNCTION( "sign" ),
 	INTRINSIC_FLOAT2_FUNCTION( "step" ),
 	INTRINSIC_FLOAT2_FUNCTION( "reflect" ),
 
 	INTRINSIC_FLOAT1_FUNCTION("isnan"),
-	INTRINSIC_FLOAT1_FUNCTION("isinf"),
+		INTRINSIC_FLOAT1_FUNCTION("isinf"),
+		INTRINSIC_FLOAT1_FUNCTION("isfinite"),
 			
 	Intrinsic("asuint",    HLSLBaseType_Uint, HLSLBaseType_Float),
 	Intrinsic("asint",    HLSLBaseType_Int, HLSLBaseType_Float),
@@ -497,6 +609,15 @@ const Intrinsic _intrinsic[] =
 	Intrinsic( "sincos", HLSLBaseType_Void,  HLSLBaseType_Half2,   HLSLBaseType_Half2,  HLSLBaseType_Half2 ),
 	Intrinsic( "sincos", HLSLBaseType_Void,  HLSLBaseType_Half3,   HLSLBaseType_Half3,  HLSLBaseType_Half3 ),
 	Intrinsic( "sincos", HLSLBaseType_Void,  HLSLBaseType_Half4,   HLSLBaseType_Half4,  HLSLBaseType_Half4 ),
+
+	Intrinsic("refract", HLSLBaseType_Float, HLSLBaseType_Float, HLSLBaseType_Float, HLSLBaseType_Float),
+	Intrinsic("refract", HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float),
+	Intrinsic("refract", HLSLBaseType_Float3, HLSLBaseType_Float3, HLSLBaseType_Float3, HLSLBaseType_Float),
+	Intrinsic("refract", HLSLBaseType_Float4, HLSLBaseType_Float4, HLSLBaseType_Float4, HLSLBaseType_Float),
+	Intrinsic("refract", HLSLBaseType_Half, HLSLBaseType_Half, HLSLBaseType_Half, HLSLBaseType_Half),
+	Intrinsic("refract", HLSLBaseType_Half2, HLSLBaseType_Half2, HLSLBaseType_Half2, HLSLBaseType_Half),
+	Intrinsic("refract", HLSLBaseType_Half3, HLSLBaseType_Half3, HLSLBaseType_Half3, HLSLBaseType_Half),
+	Intrinsic("refract", HLSLBaseType_Half4, HLSLBaseType_Half4, HLSLBaseType_Half4, HLSLBaseType_Half),
 
 	Intrinsic( "mad", HLSLBaseType_Float, HLSLBaseType_Float, HLSLBaseType_Float, HLSLBaseType_Float ),
 	Intrinsic( "mad", HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float2 ),
