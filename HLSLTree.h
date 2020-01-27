@@ -262,6 +262,7 @@ enum HLSLBinaryOp
 	HLSLBinaryOp_Sub,
 	HLSLBinaryOp_Mul,
 	HLSLBinaryOp_Div,
+	HLSLBinaryOp_Mod,
 	HLSLBinaryOp_Less,
 	HLSLBinaryOp_Greater,
 	HLSLBinaryOp_LessEqual,
@@ -293,7 +294,8 @@ inline bool IsArithmeticOp( HLSLBinaryOp op )
 	return op == HLSLBinaryOp_Add ||
 		op == HLSLBinaryOp_Sub ||
 		op == HLSLBinaryOp_Mul ||
-		op == HLSLBinaryOp_Div;
+		op == HLSLBinaryOp_Div ||
+		op == HLSLBinaryOp_Mod;
 }
 
 inline bool IsLogicOp( HLSLBinaryOp op )
