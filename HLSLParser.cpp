@@ -2608,8 +2608,13 @@ bool HLSLParser::ParseTerminalExpression(HLSLExpression*& expression, bool& need
 					arrayAccess->expressionType.baseType = HLSLBaseType_Uint;
 					break;
 				default:
+					arrayAccess->expressionType.baseType = expression->expressionType.baseType;
+					break;
+				/*
+				default:
 					m_tokenizer.Error("array, matrix, vector, or indexable object type expected in index expression");
 					return false;
+				*/
 				}
 			}
 
