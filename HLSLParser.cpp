@@ -3556,7 +3556,7 @@ const HLSLBuffer* HLSLParser::FindBuffer(const char* name) const
 		if (String_Equal(name, m_buffers[i]->name))
 			return m_buffers[i];
 	}
-	return false;
+	return nullptr;
 }
 
 const HLSLFunction* HLSLParser::MatchFunctionCall(const HLSLFunctionCall* functionCall, const char* name)
