@@ -263,6 +263,8 @@ enum HLSLBinaryOp
 	HLSLBinaryOp_Mul,
 	HLSLBinaryOp_Div,
 	HLSLBinaryOp_Mod,
+	HLSLBinaryOp_BitShiftLeft,
+	HLSLBinaryOp_BitShiftRight,
 	HLSLBinaryOp_Less,
 	HLSLBinaryOp_Greater,
 	HLSLBinaryOp_LessEqual,

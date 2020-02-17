@@ -52,6 +52,7 @@ enum HLSLToken
     HLSLToken_RWTexture2D,
     HLSLToken_RWTexture3D,
     HLSLToken_SamplerState,
+    HLSLToken_Sampler,
 
     // Reserved words.
     HLSLToken_If,
@@ -135,6 +136,8 @@ enum HLSLToken
     HLSLToken_DivideEqual,
     HLSLToken_AndAnd,       // &&
     HLSLToken_BarBar,       // ||
+    HLSLToken_BitShiftLeft, // <<
+    HLSLToken_BitShiftRight,// >>
     
     // Other token types.
     HLSLToken_FloatLiteral,

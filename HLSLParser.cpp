@@ -673,8 +673,9 @@ const int _binaryOpPriority[] =
 	{
 		2, 1, //  &&, ||
 		8, 8, //  +,  -
-		9, 9, //  *,  /
-		9,    // %
+		10,10, //  *,  /
+		10,    // %
+		9, 9, // <<, >>
 		7, 7, //  <,  >,
 		7, 7, //  <=, >=,
 		6, 6, //  ==, !=
@@ -732,7 +733,8 @@ const BaseTypeDescription _baseTypeDescriptions[HLSLBaseType_Count] =
 		{ "RWTexture1D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture1D
 		{ "RWTexture2D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture2D
 		{ "RWTexture3D",        NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_RWTexture3D
-		{ "SamplerState",        NumericType_NaN,        1, 0, 0, -1 },     // HLSLBaseType_SamplerState
+		{ "SamplerState",       NumericType_NaN,        1, 0, 0, -1 },      // HLSLBaseType_SamplerState
+		{ "sampler",			NumericType_NaN,		1, 0, 0, -1 },		// HLSLBaseType_SamplerState
 	};
 
 // IC: I'm not sure this table is right, but any errors should be caught by the backend compiler.
@@ -980,6 +982,8 @@ static const char* GetBinaryOpName(HLSLBinaryOp binaryOp)
 	case HLSLBinaryOp_Mod:          return "%";
 	case HLSLBinaryOp_Less:         return "<";
 	case HLSLBinaryOp_Greater:      return ">";
+	case HLSLBinaryOp_BitShiftLeft: return "<<";
+	case HLSLBinaryOp_BitShiftRight:return ">>";
 	case HLSLBinaryOp_LessEqual:    return "<=";
 	case HLSLBinaryOp_GreaterEqual: return ">=";
 	case HLSLBinaryOp_Equal:        return "==";
@@ -2084,6 +2088,8 @@ bool HLSLParser::AcceptBinaryOperator(int priority, HLSLBinaryOp& binaryOp)
 	switch (token)
 	{
 	case HLSLToken_AndAnd:          binaryOp = HLSLBinaryOp_And;          break;
+	case HLSLToken_BitShiftLeft:    binaryOp = HLSLBinaryOp_BitShiftLeft; break;
+	case HLSLToken_BitShiftRight:   binaryOp = HLSLBinaryOp_BitShiftRight; break;
 	case HLSLToken_BarBar:          binaryOp = HLSLBinaryOp_Or;           break;
 	case '+':                       binaryOp = HLSLBinaryOp_Add;          break;
 	case '-':                       binaryOp = HLSLBinaryOp_Sub;          break;
@@ -3167,6 +3173,7 @@ HLSLBaseType HLSLParser::TokenToBaseType(int token)
 	case HLSLToken_RWTexture1D: return HLSLBaseType_RWTexture1D;
 	case HLSLToken_RWTexture2D: return HLSLBaseType_RWTexture2D;
 	case HLSLToken_RWTexture3D: return HLSLBaseType_RWTexture3D;
+	case HLSLToken_Sampler:
 	case HLSLToken_SamplerState: return HLSLBaseType_SamplerState;
 	default: return HLSLBaseType_Void;
 	}
@@ -3556,7 +3563,7 @@ const HLSLBuffer* HLSLParser::FindBuffer(const char* name) const
 		if (String_Equal(name, m_buffers[i]->name))
 			return m_buffers[i];
 	}
-	return false;
+	return nullptr;
 }
 
 const HLSLFunction* HLSLParser::MatchFunctionCall(const HLSLFunctionCall* functionCall, const char* name)

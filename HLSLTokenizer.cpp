@@ -59,6 +59,7 @@ static const char* _reservedWords[] =
         "RWTexture2D",
         "RWTexture3D",
         "SamplerState",
+        "sampler",
         "if",
         "else",
         "for",
@@ -263,6 +264,12 @@ void HLSLTokenizer::Next()
     if ((m_buffer[0] == '-' || m_buffer[0] == '+') && (m_buffer[1] == m_buffer[0]))
     {
         m_token = (m_buffer[0] == '+') ? HLSLToken_PlusPlus : HLSLToken_MinusMinus;
+        m_buffer += 2;
+        return;
+    }
+    else if ((m_buffer[0] == '<' || m_buffer[0] == '>') && (m_buffer[1] == m_buffer[0]))
+    {
+        m_token = (m_buffer[0] == '<') ? HLSLToken_BitShiftLeft : HLSLToken_BitShiftRight;
         m_buffer += 2;
         return;
     }
@@ -643,6 +650,12 @@ void HLSLTokenizer::GetTokenName(int token, char buffer[s_maxIdentifier])
     {
         switch (token)
         {
+        case HLSLToken_BitShiftLeft:
+            strcpy(buffer, "<<");
+            break;
+        case HLSLToken_BitShiftRight:
+            strcpy(buffer, ">>");
+            break;
         case HLSLToken_PlusPlus:
             strcpy(buffer, "++");
             break;

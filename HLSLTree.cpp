@@ -324,6 +324,12 @@ bool HLSLTree::GetExpressionValue(HLSLExpression * expression, int & value)
             case HLSLBinaryOp_Less:
                 value = value1 < value2;
                 return true;
+            case HLSLBinaryOp_BitShiftLeft:
+                value = value1 << value2;
+                return true;
+            case HLSLBinaryOp_BitShiftRight:
+                value = value1 >> value2;
+                return true;
             case HLSLBinaryOp_Greater:
                 value = value1 > value2;
                 return true;
@@ -552,6 +558,9 @@ int HLSLTree::GetExpressionValue(HLSLExpression * expression, float values[4])
                 return dim;
             case HLSLBinaryOp_Div:
                 for (int i = 0; i < dim; i++) values[i] = values1[i] / values2[i];
+                return dim;
+            case HLSLBinaryOp_BitShiftRight: // TODO: ?
+            case HLSLBinaryOp_BitShiftLeft:
                 return dim;
             default:
                 return 0;
